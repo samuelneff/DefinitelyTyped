@@ -1,6 +1,7 @@
-// Type definitions for Async 0.1.23
+// Type definitions for Async trunk at Jan 1, 2014 , latest commit f01b3992fbe7aa2f4881152143608ad666aea1cc, updated from 0.1.23
 // Project: https://github.com/caolan/async
 // Definitions by: Boris Yankov <https://github.com/borisyankov/>
+// Definitions by: Samuel Neff <https://github.com/samuelneff/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 interface AsyncMultipleResultsCallback<T> { (err: string, results: T[]): any; }
@@ -9,6 +10,15 @@ interface AsyncTimesCallback<T> { (n: number, callback: AsyncMultipleResultsCall
 interface AsyncIterator<T> { (item: T, callback: AsyncMultipleResultsCallback<T>): void; }
 interface AsyncMemoIterator<T> { (memo: T, item: T, callback: AsyncSingleResultCallback<T>): void; }
 interface AsyncWorker<T> { (task: T, callback: Function): void; }
+interface AsyncMultipleWorker<T> { (task: T[], callback: Function): void; }
+interface AsyncCargo<T> {
+    length():number;
+    payload:number;
+    push<T>(task:T, callback?: Function):void;
+    saturated: () => void;
+    empty: () => void;
+    drain: () => void;
+}
 
 interface AsyncQueue<T> {
     length(): number;
@@ -22,11 +32,12 @@ interface AsyncQueue<T> {
 interface Async {
 
     // Collections
-    forEach<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
-    forEachSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
-    forEachLimit<T>(arr: T[], limit: number, iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+    each<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+    eachSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+    eachLimit<T>(arr: T[], limit: number, iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
     map<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     mapSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
+    mapLimit<T>(arr: T[], limit: number, iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     filter<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     select<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     filterSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
@@ -48,16 +59,31 @@ interface Async {
     concat<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     concatSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
 
+    // not documented anymore, but exist for backwards compatibility */
+    forEach<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+    forEachSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+    forEachLimit<T>(arr: T[], limit: number, iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
+
     // Control Flow
     series<T>(tasks: T[], callback?: AsyncMultipleResultsCallback<T>): void;
     series<T>(tasks: T, callback?: AsyncMultipleResultsCallback<T>): void;
     parallel<T>(tasks: T[], callback?: AsyncMultipleResultsCallback<T>): void;
     parallel<T>(tasks: T, callback?: AsyncMultipleResultsCallback<T>): void;
+    parallelLimit<T>(tasks: T[], limit:number, callback?: AsyncMultipleResultsCallback<T>): void;
+    parallelLimit<T>(tasks: T, limit:number, callback?: AsyncMultipleResultsCallback<T>): void;
     whilst(test: Function, fn: Function, callback: Function): void;
+    doWhilst(fn: Function, test: Function, callback: Function): void;
     until(test: Function, fn: Function, callback: Function): void;
+    doUntil(fn: Function, test: Function, callback: Function): void;
+    forever(fn: Function, callback: Function): void;
     waterfall<T>(tasks: T[], callback?: AsyncMultipleResultsCallback<T>): void;
     waterfall<T>(tasks: T, callback?: AsyncMultipleResultsCallback<T>): void;
+    compose(...fns:Function[]):Function;
+    applyEach(fns:Function[], ...argsThenCallback:any[]):void;
+    applyEachSeries(fns:Function[], ...argsThenCallback:any[]):void;
     queue<T>(worker: AsyncWorker<T>, concurrency: number): AsyncQueue<T>;
+    cargo<T>(worker: AsyncMultipleWorker<T>, payload?: number):AsyncCargo<T>;
+
     // auto(tasks: any[], callback?: AsyncMultipleResultsCallback<T>): void;
     auto(tasks: any, callback?: AsyncMultipleResultsCallback<any>): void;
     iterator(tasks: Function[]): Function;
