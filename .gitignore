@@ -30,6 +30,8 @@ Properties
 !_infrastructure/tests/*/*/*.js
 !_infrastructure/tests/*/*/*/*.js
 
+DefinitelyTyped.iml
+
 .idea/.name
 
 .idea/DefinitelyTyped.iml
@@ -51,3 +53,9 @@ Properties
 .idea/watcherTasks.xml
 
 .idea/watcherTasks.xml
+
+/.idea/compiler.xml
+
+/.idea/copyright
+
+/.idea/dictionaries
