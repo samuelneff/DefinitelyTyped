@@ -30,12 +30,14 @@ Properties
 !_infrastructure/tests/*/*/*.js
 !_infrastructure/tests/*/*/*/*.js
 
-DefinitelyTyped.iml
+.idea
+*.iml
+*.js.map
 
-.idea/.name
+#rx.js
+!rx.js
 
-.idea/DefinitelyTyped.iml
-
+node_modules
 .idea/encodings.xml
 
 .idea/libraries/Generated_files.xml

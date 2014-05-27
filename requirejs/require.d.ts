@@ -1,3 +1,8 @@
+// Type definitions for RequireJS 2.1.8
+// Project: http://requirejs.org/
+// Definitions by: Josh Baldwin <https://github.com/jbaldwin/>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
+
 /*
 require-2.1.8.d.ts may be freely distributed under the MIT license.
 
@@ -245,6 +250,12 @@ interface Require {
 	(modules: string[], ready: Function): void;
 
 	/**
+	* @see http://requirejs.org/docs/api.html#errbacks
+	* @param ready Called when required modules are ready.
+	**/
+	(modules: string[], ready: Function, errback: Function): void;
+
+	/**
 	* Generate URLs from require module
 	* @param module Module to URL
 	* @return URL string
@@ -311,6 +322,14 @@ interface RequireDefine {
 	*	callback return module definition
 	**/
 	(name: string, deps: string[], ready: Function): void;
+
+	/**
+	* Define a module with a name.
+	* @param name The name of the module.
+	* @param ready Callback function when the dependencies are loaded.
+	*	callback return module definition
+	**/
+	(name: string, ready: Function): void;
 }
 
 // Ambient declarations for 'require' and 'define'

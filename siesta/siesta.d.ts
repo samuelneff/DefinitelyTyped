@@ -1,3 +1,8 @@
+// Type definitions for Siesta
+// Project: http://www.bryntum.com/products/siesta/
+// Definitions by: bquarmby <https://github.com/bquarmby>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
+
 declare module Siesta {
     /**
      * @abstract
@@ -251,7 +256,7 @@ declare module Siesta {
 
                     target?: any;
 
-                    el?: typeof target;
+                    el?: any;
                 }
             }
 

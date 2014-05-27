@@ -5,10 +5,12 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 interface AsyncMultipleResultsCallback<T> { (err: string, results: T[]): any; }
-interface AsyncSingleResultCallback<T> { (err: string, result: T): any; }
+interface AsyncSingleResultCallback<T> { (err: string, result: T): void; }
 interface AsyncTimesCallback<T> { (n: number, callback: AsyncMultipleResultsCallback<T>): void; }
-interface AsyncIterator<T> { (item: T, callback: AsyncMultipleResultsCallback<T>): void; }
-interface AsyncMemoIterator<T> { (memo: T, item: T, callback: AsyncSingleResultCallback<T>): void; }
+
+interface AsyncIterator<T, R> { (item: T, callback: AsyncSingleResultCallback<R>): void; }
+interface AsyncMemoIterator<T, R> { (memo: R, item: T, callback: AsyncSingleResultCallback<R>): void; }
+
 interface AsyncWorker<T> { (task: T, callback: Function): void; }
 interface AsyncMultipleWorker<T> { (task: T[], callback: Function): void; }
 interface AsyncCargo<T> {
@@ -58,6 +60,31 @@ interface Async {
     all<T>(arr: T[], iterator: AsyncIterator<T>, callback: (result: boolean) => any);
     concat<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
     concatSeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>);
+    forEach<T,R>(arr: T[], iterator: AsyncIterator<T, R>, callback: AsyncMultipleResultsCallback<R>): void;
+    forEachSeries<T, R>(arr: T[], iterator: AsyncIterator<T, R>, callback: AsyncMultipleResultsCallback<R>): void;
+    forEachLimit<T, R>(arr: T[], limit: number, iterator: AsyncIterator<T, R>, callback: AsyncMultipleResultsCallback<R>): void;
+    map<T, R>(arr: T[], iterator: AsyncIterator<T, R>, callback: AsyncMultipleResultsCallback<R>);
+    mapSeries<T, R>(arr: T[], iterator: AsyncIterator<T, R>, callback: AsyncMultipleResultsCallback<R>);
+    filter<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    select<T, R>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    filterSeries<T, R>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    selectSeries<T, R>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    reject<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    rejectSeries<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    reduce<T, R>(arr: T[], memo: R, iterator: AsyncMemoIterator<T, R>, callback: AsyncSingleResultCallback<R>);
+    inject<T, R>(arr: T[], memo: R, iterator: AsyncMemoIterator<T, R>, callback: AsyncSingleResultCallback<R>);
+    foldl<T, R>(arr: T[], memo: R, iterator: AsyncMemoIterator<T, R>, callback: AsyncSingleResultCallback<R>);
+    reduceRight<T, R>(arr: T[], memo: R, iterator: AsyncMemoIterator<T, R>, callback: AsyncSingleResultCallback<R>);
+    foldr<T, R>(arr: T[], memo: R, iterator: AsyncMemoIterator<T, R>, callback: AsyncSingleResultCallback<R>);
+    detect<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    detectSeries<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    sortBy<T, V>(arr: T[], iterator: AsyncIterator<T, V>, callback: AsyncMultipleResultsCallback<T>);
+    some<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    any<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: AsyncMultipleResultsCallback<T>);
+    every<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: (result: boolean) => any);
+    all<T>(arr: T[], iterator: AsyncIterator<T, boolean>, callback: (result: boolean) => any);
+    concat<T, R>(arr: T[], iterator: AsyncIterator<T, R[]>, callback: AsyncMultipleResultsCallback<R>);
+    concatSeries<T, R>(arr: T[], iterator: AsyncIterator<T, R[]>, callback: AsyncMultipleResultsCallback<R>);
 
     // not documented anymore, but exist for backwards compatibility */
     forEach<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncMultipleResultsCallback<T>): void;
@@ -69,8 +96,8 @@ interface Async {
     series<T>(tasks: T, callback?: AsyncMultipleResultsCallback<T>): void;
     parallel<T>(tasks: T[], callback?: AsyncMultipleResultsCallback<T>): void;
     parallel<T>(tasks: T, callback?: AsyncMultipleResultsCallback<T>): void;
-    parallelLimit<T>(tasks: T[], limit:number, callback?: AsyncMultipleResultsCallback<T>): void;
-    parallelLimit<T>(tasks: T, limit:number, callback?: AsyncMultipleResultsCallback<T>): void;
+    parallelLimit<T>(tasks: T[], limit: number, callback?: AsyncMultipleResultsCallback<T>): void;
+    parallelLimit<T>(tasks: T, limit: number, callback?: AsyncMultipleResultsCallback<T>): void;
     whilst(test: Function, fn: Function, callback: Function): void;
     doWhilst(fn: Function, test: Function, callback: Function): void;
     until(test: Function, fn: Function, callback: Function): void;
@@ -104,5 +131,5 @@ interface Async {
 declare var async: Async;
 
 declare module "async" {
-	export = async;
+    export = async;
 }

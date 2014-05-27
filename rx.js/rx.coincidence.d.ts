@@ -1,10 +1,11 @@
-﻿///<reference path="rx.d.ts" />
-
-// Type definitions for RxJS-Coincidence package
+// Type definitions for RxJS-Coincidence v2.2.24
 // Project: http://rx.codeplex.com/
 // Definitions by: Carl de Billy <http://carl.debilly.net/>
-// Revision by: Igor Oleinikov <https://github.com/Igorbek>
+// Definitions by: Igor Oleinikov <https://github.com/Igorbek>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
+
+///<reference path="rx.d.ts" />
+///<reference path="rx.coincidence-lite.d.ts" />
 
 declare module Rx {
 

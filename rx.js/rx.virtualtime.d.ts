@@ -1,10 +1,10 @@
-///<reference path="rx.d.ts" />
-
-// Type definitions for RxJS-VirtualTime package 2.2
+// Type definitions for RxJS-VirtualTime v2.2.24
 // Project: http://rx.codeplex.com/
 // Definitions by: gsino <http://www.codeplex.com/site/users/view/gsino>
-// Revision by: Igor Oleinikov <https://github.com/Igorbek>
+// Definitions by: Igor Oleinikov <https://github.com/Igorbek>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
+
+///<reference path="rx.d.ts" />
 
 declare module Rx {
     // Virtual IScheduler
@@ -27,7 +27,7 @@ declare module Rx {
 		/* protected abstract */ toDateTimeOffset(duetime: TAbsolute): number;
 		/* protected abstract */ toRelative(duetime: number): TRelative;
 
-		/* protected */ getNext(): Internals.ScheduledItem<TAbsolute>;
+		/* protected */ getNext(): internals.ScheduledItem<TAbsolute>;
 	}
 
 	export class HistoricalScheduler extends VirtualTimeScheduler<number, number> {

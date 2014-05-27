@@ -371,7 +371,7 @@ interface HighchartsLegendOptions {
     style?: HighchartsCSSObject;
     symbolPadding?: number;
     symbolWidth?: number;
-    useHTML?: number;
+    useHTML?: boolean;
     width?: number;
     x?: number;
     y?: number;
@@ -1004,7 +1004,7 @@ interface HighchartsChartObject {
     options: HighchartsChartOptions;
     print(): void;
     redraw(): void;
-    series: HighchartsSeriesChart[];
+    series: HighchartsSeriesObject[];
     setSize(width: number, height: number): void;
     setSize(width: number, height: number, anumation: boolean): void;
     setSize(width: number, height: number, anumation: HighchartsAnimation): void;
@@ -1109,6 +1109,8 @@ interface HighchartsSeriesObject {
     setData(data: number[][], redraw: boolean): void;
     setData(data: HighchartsDataPoint[]): void; // HighchartsDataPoint[]
     setData(data: HighchartsDataPoint[], redraw: boolean): void;
+    setVisible(visible: boolean): void;
+    setVisible(visible: boolean, redraw: boolean): void;
     show(): void;
     type: string;
     visible: boolean;
@@ -1117,6 +1119,7 @@ interface HighchartsSeriesObject {
 }
 
 interface JQuery {
+    highcharts(): HighchartsChartObject;
     /**
     * Creates a new Highcharts.Chart for the current JQuery selector; usually
     * a div selected by $('#container')
@@ -1124,4 +1127,12 @@ interface JQuery {
     * @return current {JQuery} selector the current JQuery selector
     **/
     highcharts(options: HighchartsOptions): JQuery;
+    /**
+    * Creates a new Highcharts.Chart for the current JQuery selector; usually
+    * a div selected by $('#container')
+    * @param {HighchartsOptions} options Options for this chart
+    * @param callback Callback function used to manipulate the constructed chart instance
+    * @return current {JQuery} selector the current JQuery selector
+    **/
+    highcharts(options: HighchartsOptions, callback: (chart: HighchartsChartObject) => void): JQuery;
 }

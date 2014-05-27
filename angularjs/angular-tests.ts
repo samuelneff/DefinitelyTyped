@@ -1,7 +1,7 @@
 /// <reference path="angular.d.ts" />
 
 // issue: https://github.com/borisyankov/DefinitelyTyped/issues/369
-https://github.com/witoldsz/angular-http-auth/blob/master/src/angular-http-auth.js
+// https://github.com/witoldsz/angular-http-auth/blob/master/src/angular-http-auth.js
 /**
  * @license HTTP Auth Interceptor Module for AngularJS
  * (c) 2012 Witold Szczerba
@@ -14,7 +14,7 @@ angular.module('http-auth-interceptor', [])
          * Holds all the requests which failed due to 401 response,
          * so they can be re-requested in future, once login is completed.
          */
-        var buffer = [];
+        var buffer: { config: ng.IRequestConfig; deferred: ng.IDeferred<any>; }[] = [];
 
         /**
          * Required by HTTP interceptor.
@@ -55,7 +55,7 @@ angular.module('http-auth-interceptor', [])
  * $http interceptor.
  * On 401 response - it stores the request and broadcasts 'event:angular-auth-loginRequired'.
  */
-    .config(['$httpProvider', 'authServiceProvider', <any>function ($httpProvider: ng.IHttpProvider, authServiceProvider) {
+    .config(['$httpProvider', 'authServiceProvider', <any>function ($httpProvider: ng.IHttpProvider, authServiceProvider: any) {
 
         var interceptor = ['$rootScope', '$q', <any>function ($rootScope: ng.IScope, $q: ng.IQService) {
             function success(response: ng.IHttpPromiseCallbackArg<any>) {
@@ -64,7 +64,7 @@ angular.module('http-auth-interceptor', [])
 
             function error(response: ng.IHttpPromiseCallbackArg<any>) {
                 if (response.status === 401) {
-                    var deferred = $q.defer();
+                    var deferred = $q.defer<void>();
                     authServiceProvider.pushToBuffer(response.config, deferred);
                     $rootScope.$broadcast('event:auth-loginRequired');
                     return deferred.promise;
@@ -94,6 +94,7 @@ module HttpAndRegularPromiseTests {
         person: Person;
         theAnswer: number;
         letters: string[];
+        snack: string;
     }
 
     var someController: Function = ($scope: SomeControllerScope, $http: ng.IHttpService, $q: ng.IQService) => {
@@ -132,6 +133,12 @@ module HttpAndRegularPromiseTests {
         cPromise.then((letters: string[]) => {
             $scope.letters = letters;
         });
+
+        // When $q.when is passed an IPromise<T>, it returns an IPromise<T>
+        var dPromise: ng.IPromise<string> = $q.when($q.when("ALBATROSS!"));
+        dPromise.then((snack: string) => {
+            $scope.snack = snack;
+        });
     }
 
   // Test that we can pass around a type-checked success/error Promise Callback
@@ -145,14 +152,14 @@ module HttpAndRegularPromiseTests {
                 .success(callback);
         }
 
-    doFoo((data) => console.log(data));
+    doFoo((data: any) => console.log(data));
     }
 }
 
 // Test for AngularJS Syntax
 
 module My.Namespace {
-    export var x; // need to export something for module to kick in    
+    export var x: any; // need to export something for module to kick in
 }
 
 // IModule Registering Test

@@ -1,3 +1,8 @@
+// Type definitions for PDF.js
+// Project: https://github.com/mozilla/pdf.js
+// Definitions by: Josh Baldwin <https://github.com/jbaldwin/>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
+
 /*
 Copyright (c) 2013 Josh Baldwin https://github.com/jbaldwin/pdf.d.ts
 
@@ -69,12 +74,12 @@ interface PDFDocumentProxy {
 	/**
 	* Total number of pages the PDF contains.
 	**/
-	numPages(): number;
+	numPages: number;
 
 	/**
 	* A unique ID to identify a PDF.  Not guaranteed to be unique.  [jbaldwin: haha what]
 	**/
-	fingerprint(): string;
+	fingerprint: string;
 
 	/**
 	* True if embedded document fonts are in use.  Will be set during rendering of the pages.

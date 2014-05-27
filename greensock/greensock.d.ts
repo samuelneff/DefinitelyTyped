@@ -1,4 +1,8 @@
-// GreenSock Animation Platform (GSAP) - http://www.greensock.com/get-started-js/
+// Type definitions for GreenSock Animation Platform 1.1
+// Project: http://www.greensock.com/get-started-js/
+// Definitions by: Robert S <https://github.com/codebelt>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
+
 // JavaScript Docs http://api.greensock.com/js/
 // Version 1.1 (TypeScript 0.9)
 
@@ -20,6 +24,7 @@ declare class Animation {
     duration(value:number):any;
     eventCallback(type:string, callback?:Function, params?:any[], scope?:any):any;
     invalidate():any;
+    isActive():boolean;
     kill(vars?:Object, target?:Object):any;
     pause(atTime?:any, suppressEvents?:boolean):any;
     paused(value?:boolean):any;
@@ -125,6 +130,7 @@ declare class TimelineLite extends SimpleTimeline {
     progress(value:number):any;
     remove(value:any):any;
     removeLabel(label:string):any;
+    set(target: Object, vars: Object, position?:any):any;
     seek(position:any, suppressEvents?:boolean):any;
     shiftChildren(amount:number, adjustLabels?:boolean, ignoreBeforeTime?:number):any;
     staggerFrom(targets:any[], duration:number, vars:Object, stagger?:number, position?:any, onCompleteAll?:Function, onCompleteAllParams?:any[], onCompleteScope?:any):any;

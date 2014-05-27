@@ -1,4 +1,4 @@
-// Type definitions for TweenJS 0.5.0
+// Type definitions for TweenJS 0.5.1
 // Project: http://www.createjs.com/#!/TweenJS
 // Definitions by: Pedro Ferreira <https://bitbucket.org/drk4>, Chris Smith <https://github.com/evilangelist>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -12,7 +12,7 @@
 
 // Library documentation : http://www.createjs.com/Docs/TweenJS/modules/TweenJS.html
 
-/// <reference path="../createjs/createjs.d.ts" />
+/// <reference path="../createjs-lib/createjs-lib.d.ts" />
 
 declare module createjs {
     export class CSSPlugin {
@@ -75,6 +75,12 @@ declare module createjs {
         static install(): Object;
     }
 
+    /*
+        NOTE: It is commented out because it conflicts with SamplePlugin Class of PreloadJS.
+              this class is mainly for documentation purposes.
+        http://www.createjs.com/Docs/TweenJS/classes/SamplePlugin.html
+    */
+    /*
     export class SamplePlugin {
         constructor();
 
@@ -82,11 +88,12 @@ declare module createjs {
         static priority: any;
 
         //methods
-		static init(tween: Tween, prop: string, value: any): any;
+        static init(tween: Tween, prop: string, value: any): any;
         static step(tween: Tween, prop: string, startValue: any, injectProps: Object, endValue: any): void;
         static install(): void;
         static tween(tween: Tween, prop: string, value: any, startValues: Object, endValues: Object, ratio: number, wait: boolean, end: boolean): any;
     }
+    */
 
     export class Timeline extends EventDispatcher {
         constructor (tweens: Tween[], labels: Object, props: Object);
@@ -100,8 +107,8 @@ declare module createjs {
         // methods
         addLabel(label: string, position: number): void;
         addTween(...tween: Tween[]): void;
-		getCurrentLabel(): string;
-		getLabels(): Object[];
+        getCurrentLabel(): string;
+        getLabels(): Object[];
         gotoAndPlay(positionOrLabel: string): void;
         gotoAndPlay(positionOrLabel: number): void;
         gotoAndStop(positionOrLabel: string): void;
@@ -148,6 +155,7 @@ declare module createjs {
         setPaused(value: boolean): Tween;
         setPosition(value: number, actionsMode: number): boolean;
         static tick(delta: number, paused: boolean): void;
+        tick(delta: number, paused: boolean): void;
         tick(delta: number): void;
         to(props: Object, duration?: number, ease?: (t: number) => number): Tween;
         wait(duration: number, passive?: boolean): Tween;

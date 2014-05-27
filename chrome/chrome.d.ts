@@ -1,6 +1,6 @@
 // Type definitions for Chrome extension development.
 // Project: http://developer.chrome.com/extensions/
-// Definitions by: Matthew Kimber <https://github.com/matthewkimber>
+// Definitions by: Matthew Kimber <https://github.com/matthewkimber> and otiai10 <https://github.com/otiai10>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 ////////////////////
@@ -775,6 +775,14 @@ declare module chrome.downloads {
     export function resume(downloadId: number, callback?: Function): void;
     export function cancel(downloadId: number, callback?: Function): void;
     export function download(options: DownloadOptions, callback?: (downloadId: number) => void): void;
+    export function open(downloadId: number): void;
+    export function show(downloadId: number): void;
+    export function showDefaultFolder(): void;
+    export function erase(query: DownloadQuery, callback: (results: DownloadItem[]) => void): void;
+    export function removeFile(downloadId: number, callback: () => void): void;
+    export function acceptDanger(downloadId: number, callback: () => void): void;
+    export function drag(downloadId: number): void;
+    export function setShelfEnabled(enabled: boolean): void;
 
     var onChanged: DownloadChangedEvent;
     var onCreated: DownloadCreatedEvent;
@@ -1816,6 +1824,10 @@ declare module chrome.tabs {
         addListener(callback: (activeInfo: TabActiveInfo) => void): void;
     }
 
+    interface TabReplacedEvent extends chrome.events.Event {
+        addListener(callback: (addedTabId: number, removedTabId: number) => void): void;
+    }
+
     export function executeScript(details: InjectDetails, callback?: (result: any[]) => void): void;
     export function executeScript(tabId: number, details: InjectDetails, callback?: (result: any[]) => void): void;
     export function get(tabId: number, callback: (tab: Tab) => void): void;
@@ -1823,6 +1835,7 @@ declare module chrome.tabs {
     export function create(createProperties: CreateProperties, callback?: (tab: Tab) => void): void;
     export function move(tabId: number, moveProperties: MoveProperties, callback?: (tab: Tab) => void): void;
     export function move(tabIds: number[], moveProperties: MoveProperties, callback?: (tabs: Tab[]) => void): void;
+    export function update(updateProperties: UpdateProperties, callback?: (tab?: Tab) => void): void;
     export function update(tabId: number, updateProperties: UpdateProperties, callback?: (tab?: Tab) => void): void;
     export function remove(tabId: number, callback?: Function): void;
     export function remove(tabIds: number[], callback?: Function): void;
@@ -1848,6 +1861,7 @@ declare module chrome.tabs {
     var onDetached: TabDetachedEvent;
     var onCreated: TabCreatedEvent;
     var onActivated: TabActivatedEvent;
+    var onReplaced: TabReplacedEvent;
 }
 
 ////////////////////
