@@ -36,7 +36,7 @@ async.map(['file1', 'file2', 'file3'], fs.stat, function (err, results) { });
 async.filter(['file1', 'file2', 'file3'], path.exists, function (results) { });
 
 var process;
-async.reduce([1, 2, 3], 0, function (memo, item, callback) {
+async.reduce([1, 2, 3], 0, function (memo:number, item, callback) {
     process.nextTick(function () {
         callback(null, memo + item)
     });
