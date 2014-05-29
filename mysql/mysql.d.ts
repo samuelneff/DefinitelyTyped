@@ -488,9 +488,8 @@ declare module "mysql" {
          * @param options Stream options.
          */
         // HACK: Couldn't get it to compile referencing node.d.ts/stream/ReadableOptions
-        stream(options:{highWaterMark?: number; encoding?: string; objectMode?: boolean
-        }):ReadableStream;
-
+        //stream(options:{highWaterMark?: number; encoding?: string; objectMode?: boolean}):Readable;
+        stream(options?:stream.ReadableOptions):stream.Readable;
         /**
          * The sql assigned to the query.  Once query is run, the sql will
          * have placeholders already replaced by values and appropriately

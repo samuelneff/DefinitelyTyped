@@ -12,6 +12,7 @@
 //
 
 import mysql = require('mysql');
+import stream = require('stream');
 
 var q:mysql.Query;
 var p:mysql.ConnectionPool;
@@ -22,8 +23,6 @@ cc.user = "me";
 var c:mysql.Connection;
 c.createQuery("");
 c.createQuery("", (a,b,c) => {});
-c.createQuery( (a,b,c) => {});
-c.createQuery
 
 var connection:mysql.Connection = mysql.createConnection({
     host     : 'localhost',
@@ -345,7 +344,7 @@ q6
 //
 //
 
-var target:WritableStream;
+var target:stream.Writable;
 
 connection.query('SELECT * FROM posts')
     .stream({highWaterMark: 5})
