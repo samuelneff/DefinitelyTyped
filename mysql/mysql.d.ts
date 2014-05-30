@@ -515,6 +515,23 @@ declare module "mysql" {
             nestTables: any;
     }
 
+    export interface Field
+    {
+        catalog:string; 
+        db:string; 
+        table:string; 
+        orgTable:string; 
+        name:string; 
+        orgName:string; 
+        charsetNr:number; 
+        length:number; 
+        type:number; 
+        flags:number; 
+        decimals:number; 
+        default:number; 
+        zeroFill:boolean; 
+
+    }
     /**
      * Parameters that can be passed to mysql.createConnection() to establish a connection to the database.
      */
