@@ -326,7 +326,6 @@ interface Date {
     parseInvariant(value: string, ...formats: string[]): string;
 }
 
-
 declare module MicrosoftAjaxBaseTypeExtensions {
 
     /**
@@ -909,7 +908,7 @@ declare function $find(id: string, parent?: HTMLElement): Sys.Component;
 * @param handler The event handler to add.
 * @param autoRemove (Optional) A boolean value that determines whether the handler should be removed automatically when the element is disposed.
 */
-declare function $addHandler(element: Element, eventName: string, handler: Function, autoRemove?: boolean): void;
+declare function $addHandler(element: Sys.UI.DomElement, eventName: string, handler: Function, autoRemove?: boolean): void;
 
 /**
 * Provides a shortcut to the addHandlers method of the Sys.UI.DomEvent class. This member is static and can be invoked without creating an instance of the class.
@@ -919,7 +918,7 @@ declare function $addHandler(element: Element, eventName: string, handler: Funct
 * @param handlerOwner (Optional) The object instance that is the context for the delegates that should be created from the handlers.
 * @param autoRemove (Optional) A boolean value that determines whether the handler should be removed automatically when the element is disposed.
 */
-declare function $addHandlers(element: Element, events: any, handlerOwner?: any, autoRemove?: boolean): void;
+declare function $addHandlers(element: Sys.UI.DomElement, events: any, handlerOwner?: any, autoRemove?: boolean): void;
 
 /**
 * Provides a shortcut to the clearHandlers method of the Sys.UI.DomEvent class. This member is static and can be invoked without creating an instance of the class.
@@ -927,7 +926,7 @@ declare function $addHandlers(element: Element, events: any, handlerOwner?: any,
 * @see {@link http://msdn.microsoft.com/en-us/library/bb310959(v=vs.100).aspx}
 * @param The DOM element that exposes the events.
 */
-declare function $clearHandlers(element: Element): void;
+declare function $clearHandlers(element: Sys.UI.DomElement): void;
 
 /**
 * Provides a shortcut to the getElementById method of the Sys.UI.DomElement class. This member is static and can be invoked without creating an instance of the class.
@@ -937,9 +936,11 @@ declare function $clearHandlers(element: Element): void;
 * @param element 
 *           The parent element to search. The default is the document element.
 * @return
-*   The element
+*   The  Sys.UI.DomElement
 */
-declare function $get(id: string, element?: Element): HTMLElement;
+declare function $get(id: string): any; // Examples use HTMLElement and DomElement
+declare function $get(id: string, element?: HTMLElement): HTMLElement;
+declare function $get(id: string, element?: Sys.UI.DomElement): Sys.UI.DomElement;
 
 /**
 * Provides a shortcut to the removeHandler method of the Sys.UI.DomEvent class. This member is static and can be invoked without creating an instance of the class.
@@ -948,7 +949,9 @@ declare function $get(id: string, element?: Element): HTMLElement;
 * @param eventName The name of the DOM event.
 * @param handler The event handler to remove.
 */
-declare function $removeHandler(element: Element, eventName: string, handler: Function): void;
+declare function $removeHandler(element: any, eventName: string, handler: Function): void;
+declare function $removeHandler(element: HTMLElement, eventName: string, handler: Function): void;
+declare function $removeHandler(element: Sys.UI.DomElement, eventName: string, handler: Function): void;
 
 //#endregion
 
@@ -1135,7 +1138,7 @@ declare module Sys {
     * The Sys.Browser object determines which browser is being used and provides some information about it. You can use this object to help customize your code to the unique requirements or capabilities of the browser.
     * @see {@link http://msdn.microsoft.com/en-us/library/cc679064(v=vs.100).aspx}
     */
-    interface IBrowser {
+    interface Browser {
 
         //#region Fields
 
@@ -1171,7 +1174,7 @@ declare module Sys {
         //#endregion
     }
 
-    export function Browser(): Sys.IBrowser;
+    export function Browser(): Sys.Browser;
 
     /**
     * Provides the base class for the Control and Behavior classes, and for any other object whose lifetime should be managed by the ASP.NET AJAX client library.
@@ -1198,15 +1201,6 @@ declare module Sys {
         * Raised when the dispose method is called for a component.
         */
         remove_disposing(handler: Function): void;
-        /**
-        * Gets the ID of the current Component object.
-        */
-        get_id(): string;
-        /**
-        * Sets the ID of the current Component object.
-        * @param value A string that contains the ID of the component.
-        */
-        set_id(value: string): void;
         /**
         * Raised when the raisePropertyChanged method of the current Component object is called.
         */
@@ -1270,6 +1264,37 @@ declare module Sys {
         //#endregion
 
         //#region Properties
+
+        /**
+         * Gets an EventHandlerList object that contains references to all the event handlers that are mapped to the current component's events.
+         * This member supports the client-script infrastructure and is not intended to be used directly from your code.
+         * @return 
+         *      An EventHandlerList object that contains references to all the events and handlers for this component.
+         */
+        get_events(): any;
+        /**
+        * Gets the ID of the current Component object.
+        * @return 
+        *       The id
+        */
+        get_id(): string;
+        /**
+        * Sets the ID of the current Component object.
+        * @param value A string that contains the ID of the component.
+        */
+        set_id(value: string): void;
+        /**
+         * Gets a value indicating whether the current Component object is initialized.
+         * @return
+         *      true if the current Component is initialized; otherwise, false.
+         */
+        get_isInitialized(): boolean;
+        /**
+         * Gets a value indicating whether the current Component object is updating.
+         * @return
+         *      true if the current Component object is updating; otherwise, false.
+         */
+        get_isUpdating(): boolean;
 
         //#endregion
     }
@@ -1340,29 +1365,45 @@ declare module Sys {
 
         //#region Constructors
 
+        /**
+         * Initializes a new instance of the Sys.Debug class.
+         */
         constructor();
 
         //#endregion
 
         //#region Methods
 
-        assert(condition: boolean, message?: string, displayCaller?: boolean): void;
+        /**
+         * Checks for a condition, and if the condition is false, displays a message and prompts the user to break into the debugger. 
+         * When you call the assert method in your code, express the success of an operation as true or false and use that value for condition. If the operation fails (if condition is false), the assert logic is executed.
+         * The assert method should be used to catch developer errors. To respond to user errors and to run-time error conditions such as network errors or permission failures, throw an exception.
+         * Debugging behavior, requirements, and the output of trace messages vary with different browsers. For more information, see Debugging and Tracing Ajax Applications Overview.
+         * 
+         * @param condition
+         *      true to continue to execute code; false to display message and break into the debugger.
+         * @param message
+         *      (Optional) The message to display. The default is an empty string ("").
+         * @param displayCaller
+         *      (Optional) true to indicate that the name of the function that is calling assert should be displayed in the message. The default is false. 
+         */
+        static assert(condition: boolean, message?: string, displayCaller?: boolean): void;
         /**
          * Clears all trace messages from the trace console.
          */
-        clearTrace(): void;
+        static clearTrace(): void;
         /**
         * Displays a message in the debugger's output window and breaks into the debugger.
         * @param message
         *           The message to display.  
         */
-        fail(message: string): void;
+        static fail(message: string): void;
         /**
         * Appends a text line to the debugger console and to the trace console, if available.
         * @param text
         *       The text to display.
         */
-        trace(text: string): void;
+        static trace(text: string): void;
         /**
          * Dumps an object to the debugger console and to the trace console, if available.
          * @param object
@@ -1370,7 +1411,7 @@ declare module Sys {
          * @param name
          *      (Optional) The name of the object.
          */
-        traceDump(object: any, name?: string): void;
+        static traceDump(object: any, name?: string): void;
 
         //#endregion
     }
@@ -1496,12 +1537,6 @@ declare module Sys {
         */
         static insert(target: any, index: number, item: any): void;
         /**
-        * Indicates that the target is being updated.
-        * @param target The target object to update.
-        * @return true if given target argument is currently updating; otherwise false.
-        */
-        static isUpdating(target: any): boolean;
-        /**
         * Makes an object directly observable by adding observable methods to it.
         * @param target The object, array, or DOM element to make observable.
         * @return The observable object.
@@ -1563,6 +1598,16 @@ declare module Sys {
 
         //#endregion
 
+        //#region Properties
+
+        /**
+        * Indicates that the target is being updated.
+        * @param target The target object to update.
+        * @return true if given target argument is currently updating; otherwise false.
+        */
+        static isUpdating(target: any): boolean;
+
+        //#endregion
     }
 
     /**
@@ -1577,139 +1622,139 @@ declare module Sys {
         /**
         * @return "Actual value was {0}." 
         */
-        actualValue: string;
+        static actualValue: string;
         /**
         * @return "The application failed to load within the specified time out period."
         */
-        appLoadTimedout: string;
+        static appLoadTimedout: string;
         /**
         * @return "Value does not fall within the expected range."
         */
-        argument: string;
+        static argument: string;
         /**
         * @return "Value cannot be null."
         */
-        argumentNull: string;
+        static argumentNull: string;
         /**
         * @return "Specified argument was out of the range of valid values.
         */
-        argumentOutOfRange: string;
+        static argumentOutOfRange: string;
         /**
         * @return "Object cannot be converted to the required type."
         */
-        argumentType: string;
+        static argumentType: string;
         /**
         * @return "Object of type '{0}' cannot be converted to type '{1}'."
         */
-        argumentTypeWithTypes: string;
+        static argumentTypeWithTypes: string;
         /**
         * @return "Value cannot be undefined."
         */
-        argumentUndefined: string;
+        static argumentUndefined: string;
         /**
         * @return "Assertion Failed: {0}"
         */
-        assertFailed: string;
+        static assertFailed: string;
         /**
         * @return "Assertion Failed: {0}\r\nat {1}"
         */
-        assetFailedCaller: string;
+        static assetFailedCaller: string;
         /**
         * @return "Base URL does not contain ://."
         */
-        badBaseUrl1: string;
+        static badBaseUrl1: string;
         /**
         * @return "Base URL does not contain another /."
         */
-        badBaseUrl2: string;
+        static badBaseUrl2: string;
         /**
         * @return "Cannot find last / in base URL."
         */
-        badBaseUrl3: string;
+        static badBaseUrl3: string;
         /**
         * @return "{0}\r\n\r\nBreak into debugger?"
         */
-        breakIntoDebugger: string;
+        static breakIntoDebugger: string;
         /**
         * @return "Cannot abort when executor has not started."
         */
-        cannotAbortBeforeStart: string;
+        static cannotAbortBeforeStart: string;
         /**
         * @return "Cannot call {0} when responseAvailable is false."
         */
-        cannotCallBeforeResponse: string;
+        static cannotCallBeforeResponse: string;
         /**
         * @return "Cannot call {0} once started."
         */
-        cannotCallOnceStarted: string;
+        static cannotCallOnceStarted: string;
         /**
         * @return "Cannot call {0} outside of a completed event handler."
         */
-        cannotCallOutsideHandler: string;
+        static cannotCallOutsideHandler: string;
         /**
         * @return "Cannot deserialize empty string."
         */
-        cannotDeserializeEmptyString: string;
+        static cannotDeserializeEmptyString: string;
         /**
         * @return "Cannot serialize non-finite numbers."
         */
-        cannotSerializeNonFiniteNumbers: string;
+        static cannotSerializeNonFiniteNumbers: string;
         /**
         * @return "The id property can't be set on a control."
         */
-        controlCantSetId: string;
+        static controlCantSetId: string;
         /**
         * @return "'{0}' is not a valid value for enum {1}."
         */
-        enumInvalidValue: string;
+        static enumInvalidValue: string;
         /**
         * @return "Handler was not added through the Sys.UI.DomEvent.addHandler method.
         */
-        eventHandlerInvalid: string;
+        static eventHandlerInvalid: string;
         /**
         * @return "One of the identified items was in an invalid format."
         */
-        format: string;
+        static format: string;
         /**
         * @return "The string was not recognized as a valid Date."
         */
-        formatBadDate: string;
+        static formatBadDate: string;
         /**
         * @return "Format specifier was invalid."
         */
-        formatBadFormatSpecifier: string;
+        static formatBadFormatSpecifier: string;
         /**
         * @return "Input string was not in a correct format."
         */
-        formatInvalidString: string;
+        static formatInvalidString: string;
         /**
         * @return "Could not create a valid Sys.Net.WebRequestExecutor from: {0}."
         */
-        invalidExecutorType: string;
+        static invalidExecutorType: string;
         /**
         * @return "httpVerb cannot be set to an empty or null string."
         */
-        invalidHttpVerb: string;
+        static invalidHttpVerb: string;
         /**
         * @return "Operation is not valid due to the current state of the object."
         */
-        invalidOperation: string;
+        static invalidOperation: string;
         /**
         * @return "Value must be greater than or equal to zero."
         */
-        invalidTimeout: string;
+        static invalidTimeout: string;
         /**
         * @return "Cannot call invoke more than once."
         */
-        invokeCalledTwice: string;
+        static invokeCalledTwice: string;
         /**
         * @return "The method or operation is not implemented."
         */
-        notImplemented: string;
+        static notImplemented: string;
         /**
         * @return "Cannot call executeRequest with a null webRequest."
         */
-        nullWebRequest: string;
+        static nullWebRequest: string;
 
         //#endregion
     }
@@ -1770,8 +1815,7 @@ declare module Sys {
         *           (Optional) A string to append between each element of the string that is returned.  
         * @return A string representation of the StringBuilder instance. If separator is specified, the delimiter string is inserted between each element of the returned string.
         */
-        toString(separator: string): string;
-        toString(): string;
+        toString(separator?: string): string;
 
         //#endregion
     }
@@ -1847,11 +1891,16 @@ declare module Sys {
     * You register an interface by when you register the class by calling the Type.registerClass method. You specify IDisposable in the interfaceTypes parameter when you call Type.registerClass.
     */
     interface IDisposable {
+
+        //#region Methods
+
         /**
         * Releases resources held by an object that implements the Sys.IDisposable interface.
         * Implement the dispose method to close or release resources held by an object, or to prepare an object for reuse.
         */
         dispose(): void;
+
+        //#endregion
     }
 
     /**
@@ -1859,6 +1908,9 @@ declare module Sys {
     * Implement this interface if the class must notify other objects when it is releasing resources. The base component class already implements this interface. Therefore, typically this interface is already available.
     */
     interface INotifyDisposing {
+
+        //#region Events 
+
         /**
         * Occurs when an object's resources are released.
         * @param handler
@@ -1871,12 +1923,17 @@ declare module Sys {
         *       The name of the event handler for the disposing event.
         */
         remove_disposing(handler: Function): void;
+
+        //#endregion
     }
 
     /**
     * Defines the propertyChanged event.
     */
     interface INotifyPropertyChange {
+
+        //#region Events
+
         /**
         * Occurs when a component property is set to a new value.
         * @param handler
@@ -1889,6 +1946,8 @@ declare module Sys {
         *       The name of the event handler for the propertyChanged event.
         */
         remove_propertyChanged(handler: Function): void;
+
+        //#endregion
     }
 
     //#endregion
@@ -1932,12 +1991,16 @@ declare module Sys {
 
     /**
     * Provides a base class for classes that are used by event sources to pass event argument information.
+    * The EventArgs class is a base class and not intended to be used directly. Override this constructor to provide specific functionality.
     * @see {@link http://msdn.microsoft.com/en-us/library/bb383795(v=vs.100).aspx}
     */
     class EventArgs {
 
         //#region Constructors
 
+        /**
+         * Initializes a new instance of the EventArgs class.
+         */
         constructor();
 
         //#endregion
@@ -2185,6 +2248,53 @@ declare module Sys {
     module Net {
 
         /**
+         * Generated Proxy Classes
+         * Enables your application to call Web services asynchronously by using ECMAScript (JavaScript).
+         * @see {@link http://msdn.microsoft.com/en-us/library/bb310823(v=vs.100).aspx}
+         */
+        // Cannot create definitions for generated proxy classes.
+
+        /**
+         * Contains information about a Web request that is ready to be sent to the current Sys.Net.WebRequestExecutor instance.
+         * This class represents the type for the second parameter of the callback function added by the add_invokingRequest method. 
+         * The callback function is called before the Web request is routed to the current instance of the WebRequestExecutor class.
+         * 
+         * @see {@link http://msdn.microsoft.com/en-us/library/bb397488(v=vs.100).aspx}
+         */
+        class NetWorkRequestEventArgs {
+
+            //#region Constructors
+
+            /**
+             * Initializes a new instance of the Sys.Net.NetworkRequestEventArgs. class.
+             * @param value
+             *      The current WebRequest instance.
+             */
+            constructor(value: WebRequest);
+
+            //#endregion
+
+            //#region Methods
+
+            //#endregion
+
+            //#region Properties
+
+            /**
+             * Gets the Web request to be routed to the current Sys.Net.WebRequestExecutor instance.
+             * Use this property to inspect the contents of a Web request before it is routed to the current instance of the Sys.Net.WebRequestExecutor class.
+             * You can access the Web request instance from the handler that is called before the request is routed. 
+             * This event handler is added by using the add_invokingRequest method.
+             * @return 
+             *      The WebRequest.
+             */
+            get_webRequest(): WebRequest;
+
+            //#endregion
+
+        }
+
+        /**
         * Provides the script API to make a Web request.
         * @see {@link http://msdn.microsoft.com/en-us/library/bb310979(v=vs.100).aspx}
         */
@@ -2344,6 +2454,95 @@ declare module Sys {
 
             //#endregion
         }
+
+
+        /**
+         * Manages the flow of the Web requests issued by the Sys.Net.WebRequest object to the associated executor object.
+         * @see {@link http://msdn.microsoft.com/en-us/library/bb397435(v=vs.100).aspx}
+         */
+        class IWebRequestManager {
+
+            //#region Constructor
+
+            /**
+             * Initializes a new instance of the Sys.Net.WebRequestManager class when implemented in a derived class.
+             */
+            constructor();
+
+            //#endregion
+
+            //#region Methods
+
+            /**
+             * Registers a handler for the completed request event of the WebRequestManager.
+             * @param handler
+             *      The function registered to handle the completed request event.
+             */
+            add_completedRequest(handler: (sender: any, eventArgs: any) => void): void;
+            /**
+             * Registers a handler for processing the invoking request event of the WebRequestManager.
+             * @param handler
+             *      The function registered to handle the invoking request event.
+             */
+            add_invokingRequest(handler: (sender: any, networkRequestEventArgs: any) => void): void;
+            /**
+             * Sends Web requests to the default network executor. 
+             * This member supports the client-script infrastructure and is not intended to be used directly from your code.
+             * @param WebRequest
+             *      An instance of the Sys.Net.WebRequest class.
+             */
+            executeRequest(WebRequest: Sys.Net.WebRequest): void;
+            /**
+             * Removes the event handler set by the add_completedRequest method. 
+             * Use the remove_ completedRequest method to remove the event handler you set using the add_ completedRequest method.
+             * @param handler
+             *      The function that handles the completed request event.
+             */
+            remove_completedRequest(handler: Function): void;
+            /**
+             * Removes the event handler set by the add_invokingRequest method. 
+             * Use the remove_invokingRequest method to remove the event handler you set using the add_invokingRequest method.
+             * @param handler
+             *          The function that handles the invoking request event.
+             */
+            remove_invokingRequest(handler: Function): void;
+
+            //#endregion
+
+            //#region Properties 
+
+            /**
+             * Gets or sets the default network executor type that is used to make network requests.
+             * @return 
+             *      The object that represents the default Web request executor.
+             */
+            get_defaultExecutorType(): Sys.Net.WebRequestExecutor;
+            /**
+             * Gets or sets the default network executor type that is used to make network requests.
+             * @param value
+             *          A reference to an implementation of the WebRequestExecutor class.
+             */
+            set_defaultExecutorType(value: Sys.Net.WebRequestExecutor): void;
+            /**
+             * Gets or sets the time-out for the default network executor.
+             * @return
+             *      An integer value that indicates the current time-out for the default executor.
+             */
+            get_defaultTimeout(): number;
+            /**
+             * Gets or sets the time-out for the default network executor.
+             * 
+             * @throws Sys.ArgumentOutOfRangeException An invalid parameter was passed.
+             * @param value
+             *          The time in milliseconds that the default executor should wait before timing out a Web request. This value must be 0 or a positive integer.
+             */
+            set_defaultTimeout(value: number): void;
+
+            //#endregion
+
+        }
+
+        export var WebRequestManager: IWebRequestManager;
 
     }
 
@@ -2561,9 +2760,9 @@ declare module Sys {
         * @see {@link http://msdn.microsoft.com/en-us/library/bb310801(v=vs.100).aspx}
         */
         class ProfileGroup {
-     
+
             //#region Constructors
-                   
+
             constructor();
 
             /**
@@ -2571,14 +2770,14 @@ declare module Sys {
             * @param properties
             *           (Optional) An object that contains the settings for this profile group. This parameter can be null.
             */
-           
+
             constructor(properties: Object);
 
             //#endregion
 
             //#region Methods
 
-           
+
 
             //#endregion
 
@@ -2926,10 +3125,184 @@ declare module Sys {
         }
         /**
         * Defines static methods and properties that provide helper APIs for manipulating and inspecting DOM elements.
+        * @see {@link http://msdn.microsoft.com/en-us/library/bb383788(v=vs.100).aspx}
         */
-        class DomElement {
-            // todo
+        interface DomElement {
+
+            //#region Constructors
+
+            /**
+             * Initializes a new instance of the Sys.UI.DomElement class.
+             */
+            constructor(): void;
+
+            //#endregion
+
+            //#region Methods
+
+            /**
+             * Adds a CSS class to a DOM element if the class is not already part of the DOM element. This member is static and can be invoked without creating an instance of the class.
+             * If the element does not support a CSS class, no change is made to the element.
+             * @param element
+             *             The Sys.UI.DomElement object to add the CSS class to. 
+             * @param className
+             *             The name of the CSS class to add.
+             */
+            addCssClass(element: Sys.UI.DomElement, className: string): void;
+            /**
+             * Gets a value that indicates whether the DOM element contains the specified CSS class. This member is static and can be invoked without creating an instance of the class.
+             * @param element
+             *          The Sys.UI.DomElement object to test for the CSS class.
+             * @param className
+             *          The name of the CSS class to test for.
+             * @return 
+             *          true if the element contains the specified CSS class; otherwise, false.
+             */
+            containsCssClass(element: Sys.UI.DomElement, className: string): boolean;
+            /**
+             * Gets a set of integer coordinates that represent the position, width, and height of a DOM element. This member is static and can be invoked without creating an instance of the class.
+             * 
+             * @param element
+             *          The Sys.UI.DomElement instance to get the coordinates of.
+             * @return
+             *      An object of the JavaScript type Object that contains the x-coordinate and y-coordinate of the upper-left corner, the width, and the height of the element in pixels.
+             */
+            getBounds(element: Sys.UI.DomElement): Object;
+            /**
+             * @param id
+             *      The ID of the element to find.
+             * @param element
+             *      (optional) The parent element to search in. The default is the document element.
+             */
+            getElementById(id: string): Sys.UI.DomElement;
+            getElementById(id: string, element?: Sys.UI.DomElement): Sys.UI.DomElement;
+            getElementById(id: string, element?: HTMLElement): HTMLElement;
+            getElementById(id: string, element: any): any;
+            /**
+             * Gets the absolute position of a DOM element relative to the upper-left corner of the owner frame or window. This member is static and can be invoked without creating an instance of the class.             * 
+             * @param element
+             *      The target element.             * 
+             * @return
+             *      An object of the JavaScript type Object that contains the x-coordinate and y-coordinate of the element in pixels.
+             */
+            getLocation(element: Sys.UI.DomElement): Sys.UI.Point;
+            getLocation(element: any): Object;
+            /*
+             * Returns a value that represents the layout characteristics of a DOM element when it is hidden by invoking the Sys.UI.DomElement.setVisible method. This member is static and can be invoked without creating an instance of the class.
+             * @param element
+             *      The target DOM element.
+             * @return
+             *    A Sys.UI.VisibilityMode enumeration value that indicates the layout characteristics of element when it is hidden by invoking the setVisible method.  
+             */
+            getVisibilityMode(element: Sys.UI.DomElement): Sys.UI.VisibilityMode;
+            getVisibilityMode(element: any): Sys.UI.VisibilityMode;
+            /**
+             * Gets a value that indicates whether a DOM element is currently visible on the Web page. This member is static and can be invoked without creating an instance of the class.
+             * @param element
+             *      The target DOM element.
+             * @return
+             *      true if element is visible on the Web page; otherwise, false
+             */
+            getVisible(element: any): boolean;
+            /**
+             * Determines whether the specified object is a DOM element.
+             * @param obj
+             *      An object
+             * @return
+             *      true if the object is a DOM element; otherwise, false.
+             */
+            isDomElement(obj: any): boolean;
+            /**
+             * Raises a bubble event. A bubble event causes an event to be raised and then propagated up the control hierarchy until it is handled.
+             * @param source
+             *      The DOM element that triggers the event.
+             * @param args
+             *      The event arguments
+             */
+            raiseBubbleEvent(source: Sys.UI.DomElement, args: EventArgs): void;
+            raiseBubbleEvent(source: any, args: any): void;
+            /**
+             * Removes a CSS class from a DOM element. This member is static and can be invoked without creating an instance of the class. If the element does not include a CSS class, no change is made to the element.
+             * @param element
+             *          The Sys.UI.DomElement object to remove the CSS class from.
+             * @param className 
+             *          The name of the CSS class to remove.
+             */
+            removeCssClass(element: Sys.UI.DomElement, className: string): void;
+            removeCssClass(element: HTMLElement, className: string): void;
+            removeCssClass(element: any, className: string): void;
+            /**
+             * Returns the element that has either the specified ID in the specified container, or is the specified element itself.
+             * The resolveElement method is used to verify that an ID or an object can be resolved as an element.             * 
+             * @param elementOrElementId
+             *          The element to resolve, or the ID of the element to resolve. This parameter can be null.
+             * @param containerElement
+             *          (Optional) The specified container.
+             * @return 
+             *      A DOM element.
+             */
+            resolveElement(elementOrElementId: Sys.UI.DomElement, containerElement?: Sys.UI.DomElement): Sys.UI.DomElement;
+            resolveElement(elementOrElementId: HTMLElement, containerElement?: HTMLElement): HTMLElement;
+            resolveElement(elementOrElementId: string): any;
+            /**
+             * Sets the position of a DOM element. This member is static and can be invoked without creating an instance of the class.
+             * he left and top style attributes (upper-left corner) of an element specify the relative position of an element. 
+             * The actual position will depend on the offsetParent property of the target element and the positioning mode of the element.             * 
+             * @param element The target element.
+             * @param x The x-coordinate in pixels.
+             * @param y The y-coordinate in pixels.
+             */
+            setLocation(element: Sys.UI.DomElement, x: number, y: number): void;
+            setLocation(element: HTMLElement, x: number, y: number): void;
+            setLocation(element: any, x: number, y: number): void;
+            /**
+             * Sets the layout characteristics of a DOM element when it is hidden by invoking the Sys.UI.DomElement.setVisible method. 
+             * This member is static and can be invoked without creating an instance of the class.
+             * 
+             * Use the setVisibilityMode method to set the layout characteristics of a DOM element when it is hidden by invoking the Sys.UI.DomElement.setVisible method. 
+             * For example, if value is set to Sys.UI.VisibilityMode.collapse, the element uses no space on the page when the setVisible method is called to hide the element.
+             * 
+             * @param element
+             *          The target DOM element.
+             * @param value
+             *          A Sys.UI.VisibilityMode enumeration value.
+             */
+            setVisibilityMode(element: Sys.UI.DomElement, value: Sys.UI.VisibilityMode): void;
+            /**
+             * Sets a DOM element to be visible or hidden. This member is static and can be invoked without creating an instance of the class.
+             * 
+             * Use the setVisible method to set a DOM element as visible or hidden on the Web page. 
+             * If you invoke this method with value set to false for an element whose visibility mode is set to "hide," the element will not be visible. 
+             * However, it will occupy space on the page. If the element's visibility mode is set to "collapse," the element will occupy no space in the page.
+             * For more information about how to set the layout characteristics of hidden DOM elements, see Sys.UI.DomElement setVisibilityMode Method.
+             * 
+             * @param element
+             *      The target DOM element.
+             * @param value
+             *      true to make element visible on the Web page; false to hide element.
+             */
+            setVisible(element: Sys.UI.DomElement, value: boolean): void;
+            setVisible(element: HTMLElement, value: boolean): void;
+            setVisible(element: any, value: boolean): void;
+            /**
+             * Toggles a CSS class in a DOM element. This member is static and can be invoked without creating an instance of the class. 
+             * Use the toggleCssClass method to hide a CSS class of an element if it is shown, or to show a CSS class of an element if it is hidden.
+             * 
+             * @param element
+             *          The Sys.UI.DomElement object to toggle.
+             * @param className
+             *          The name of the CSS class to toggle.
+             */
+            toggleCssClass(element: Sys.UI.DomElement, className: string): void;
+            toggleCssClass(element: HTMLElement, className: string): void;
+            toggleCssClass(element: any, className: string): void;
+
+            //#endregion
+
         }
+
+        var DomElement: Sys.UI.DomElement;
+
         /**
         * Provides cross-browser access to DOM event properties and helper APIs that are used to attach handlers to DOM element events.
         * @see {@link http://msdn.microsoft.com/en-us/library/bb310935(v=vs.100).aspx}
@@ -3048,49 +3421,60 @@ declare module Sys {
              */
             charCode: number;
             /**
-             * 
+             * Gets the x-coordinate of the mouse pointer's position relative to the client area of the browser window, excluding window scroll bars.
+             * @return An integer that represents the x-coordinate in pixels.
              */
-            clientX: any; // todo
+            clientX: number;
             /**
-             * 
+             * Gets the y-coordinate of the mouse pointer's position relative to the client area of the browser window, excluding window scroll bars.
+             * @return An integer that represents the y-coordinate in pixels.
              */
-            clientY: any; // todo
+            clientY: number;
             /**
-             * 
+             * Gets a Boolean value that indicates the state of the CTRL key when the associated event occurred.
+             * @return true if the CTRL key was pressed when the event occurred; otherwise, false.
              */
-            ctrlKey: any; // todo
+            ctrlKey: boolean;
             /**
-             * 
+             * Gets the key code of the key that raised the keyUp or keyDown event.
+             * @return An integer value that represents the key code of the key that was pressed to raise the keyUp or keyDown event.
              */
-            keyCode: any; // todo
+            keyCode: number;
             /**
-             * 
+             * Gets the x-coordinate of the mouse pointer's position relative to the object that raised the event.
+             * @return An integer that represents the x-coordinate in pixels.
              */
-            offsetX: any; // todo
+            offsetX: number;
             /**
-             * 
+             * Gets the y-coordinate of the mouse pointer's position relative to the object that raised the event.
+             * @return An integer that represents the y-coordinate in pixels.
              */
-            offsetY: any; // todo
+            offsetY: number;
             /**
-             * 
+             * Gets the x-coordinate of the mouse pointer's position relative to the user's screen.
+             * @return An integer that represents the x-coordinate in pixels.
              */
-            screenX: any; // todo
+            screenX: number;
             /**
-             * 
+             * Gets the y-coordinate of the mouse pointer's position relative to the user's screen.
+             * @return An integer that represents the y-coordinate in pixels.
              */
-            screenY: any; // todo
+            screenY: number;
             /**
-             * 
+             * Gets a Boolean value that indicates the state of the SHIFT key when the associated event occurred.
+             * @return true if the SHIFT key was pressed when the event occurred; otherwise, false.
              */
-            shiftKey: any; // todo
+            shiftKey: boolean;
             /**
-             * 
+             * Gets the object that the event acted on.
+             * @return An object that represents the target that the event acted on.
              */
-            target: any; // todo
+            target: any;
             /**
-             * 
+             * Gets the name of the event that was raised.
+             * @return A string that represents the name of the event that was raised.
              */
-            type: any; // todo
+            type: string;
 
             //#endregion
         }
@@ -3163,16 +3547,52 @@ declare module Sys {
             // todo
         }
         /**
-        * Creates an object that contains a set of integer coordinates that represent a position.
+        * Creates an object that contains a set of integer coordinates that represent a position. The getLocation method of the Sys.UI.DomElement class returns a Point object.
+        * @see {@link http://msdn.microsoft.com/en-us/library/bb383992(v=vs.100).aspx}        * 
         */
         class Point {
-            // todo
+           
+            //#region Constructors
+
+            /**
+             * Creates an object that contains a set of integer coordinates that represent a position.
+             * @param x The number of pixels between the location and the left edge of the parent frame.
+             * @param y The number of pixels between the location and the top edge of the parent frame.
+             */
+            constructor(x: number, y: number);
+
+            //#endregion
+
+            //#region Fields
+
+            /**
+             * Gets the x-coordinate of a Sys.UI.Point object in pixels. This property is read-only.
+             * @return A number that represents the x-coordinate of the Point object in pixels.
+             */
+            x: number;
+
+            /**
+             * Gets the y-coordinate of a Sys.UI.Point object in pixels. This property is read-only.
+             * @return A number that represents the y-coordinate of the Point object in pixels.
+             */
+            y: number;
+
+            //#endregion
+
         }
         /**
         * Describes the layout of a DOM element in the page when the element's visible property is set to false.
+        * @see {@link http://msdn.microsoft.com/en-us/library/bb397498(v=vs.100).aspx}
         */
         enum VisibilityMode {
-            // todo
+            /**
+             * The element is not visible, but it occupies space on the page.
+             */
+            hide,
+            /**
+             * The element is not visible, and the space it occupies is collapsed.
+             */
+            collapse
         }
     }
 
@@ -3426,7 +3846,7 @@ declare module Sys {
         * Manages client partial-page updates of server UpdatePanel controls. In addition, defines properties, events, and methods that can be used to customize a Web page with client script.
         * @see {@link http://msdn.microsoft.com/en-us/library/bb311028(v=vs.100).aspx}
         */
-        class PageRequestManager extends EventArgs {
+        class PageRequestManager {
 
             //#region Constructors 
 
@@ -3444,7 +3864,7 @@ declare module Sys {
             * @param beginRequestHandler
             *               The name of the handler method that will be called.
             */
-            add_beginRequest(beginRequestHandler: (sender: any, args: any) => void): void;
+            add_beginRequest(beginRequestHandler: (sender: any, args: BeginRequestEventArgs) => void): void;
             /**
             * Raised before the processing of an asynchronous postback starts and the postback request is sent to the server.
             *  @param beginRequestHandler
@@ -3456,49 +3876,49 @@ declare module Sys {
             * @param endRequestHandler
             *               The name of the handler method that will be called.
             */
-            add_endRequest(endRequestHandler: (sender: any, args: any) => void): void;
+            add_endRequest(endRequestHandler: (sender: any, args: Sys.WebForms.EndRequestEventArgs) => void): void;
             /**
             * Raised after an asynchronous postback is finished and control has been returned to the browser.
             * @param endRequestHandler
             *               The name of the handler method that will be removed.
             */
-            remove_endRequest(endRequestHandler: (sender: any, args: any) => void): void;
+            remove_endRequest(endRequestHandler: (sender: any, args: Sys.WebForms.EndRequestEventArgs) => void): void;
             /**
             * Raised during the initialization of the asynchronous postback.
             * @param initializeRequestHandler
             *               The name of the handler method that will be called.
             */
-            add_initializeRequest(initializeRequestHandler: (sender: any, args: any) => void): void;
+            add_initializeRequest(initializeRequestHandler: (sender: any, args: InitializeRequestEventArgs) => void): void;
             /**
             * Raised during the initialization of the asynchronous postback.
             * @param initializeRequestHandler
             *               The name of the handler method that will be called.
             */
-            remove_initializeRequest(initializeRequestHandler: (sender: any, args: any) => void): void;
+            remove_initializeRequest(initializeRequestHandler: (sender: any, args: InitializeRequestEventArgs) => void): void;
             /**
             * Raised after all content on the page is refreshed as a result of either a synchronous or an asynchronous postback.
             * @param pageLoadedHandler
             *               The name of the handler method that will be called.
             */
-            add_pageLoaded(pageLoadedHandler: (sender: any, args: any) => void): void;
+            add_pageLoaded(pageLoadedHandler: (sender: any, args: PageLoadedEventArgs) => void): void;
             /**
             * Raised after all content on the page is refreshed as a result of either a synchronous or an asynchronous postback.
             * @param pageLoadedHandler
             *               The name of the handler method that will be called.
             */
-            remove_pageLoaded(pageLoadedHandler: (sender: any, args: any) => void): void;
+            remove_pageLoaded(pageLoadedHandler: (sender: any, args: PageLoadedEventArgs) => void): void;
             /**
             * Raised after the response from the server to an asynchronous postback is received but before any content on the page is updated.
             * @param pageLoadedHandler
             *               The name of the handler method that will be called.
             */
-            add_pageLoading(pageLoadingHandler: (sender: any, args: any) => void): void;
+            add_pageLoading(pageLoadingHandler: (sender: any, args: PageLoadingEventArgs) => void): void;
             /**
             * Raised after the response from the server to an asynchronous postback is received but before any content on the page is updated.
             * @param pageLoadedHandler
             *               The name of the handler method that will be called.
             */
-            remove_pageLoading(pageLoadingHandler: (sender: any, args: any) => void): void;
+            remove_pageLoading(pageLoadingHandler: (sender: any, args: PageLoadingEventArgs) => void): void;
 
             //#endregion
 

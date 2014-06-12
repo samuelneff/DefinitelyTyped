@@ -51,16 +51,21 @@ declare module ng {
         isString(value: any): boolean;
         isUndefined(value: any): boolean;
         lowercase(str: string): string;
-        /** construct your angular application
-        official docs: Interface for configuring angular modules.
-        see: http://docs.angularjs.org/api/angular.Module
-        */
+
+        /**
+         * The angular.module is a global place for creating, registering and retrieving Angular modules. All modules (angular core or 3rd party) that should be available to an application must be registered using this mechanism.
+         *
+         * When passed two or more arguments, a new module is created. If passed only one argument, an existing module (the name passed as the first argument to module) is retrieved.
+         * 
+         * @param name The name of the module to create or retrieve.
+         * @param requires The names of modules this module depends on. If specified then new module is being created. If unspecified then the module is being retrieved for further configuration.
+         * @param configFn Optional configuration function for the module.
+         */
         module(
-            /** name of your module you want to create */
             name: string,
-            /** name of modules yours depends on */
             requires?: string[],
-            configFunction?: any): IModule;
+            configFn?: Function): IModule;
+
         noop(...args: any[]): void;
         toJson(obj: any, pretty?: boolean): string;
         uppercase(str: string): string;
@@ -81,23 +86,55 @@ declare module ng {
         animation(name: string, animationFactory: Function): IModule;
         animation(name: string, inlineAnnotatedFunction: any[]): IModule;
         animation(object: Object): IModule;
-        /** configure existing services.
-        Use this method to register work which needs to be performed on module loading
+        /**
+         * Use this method to register work which needs to be performed on module loading.
+         * 
+         * @param configFn Execute this function on module load. Useful for service configuration.
          */
         config(configFn: Function): IModule;
-        /** configure existing services.
-        Use this method to register work which needs to be performed on module loading
+        /**
+         * Use this method to register work which needs to be performed on module loading.
+         * 
+         * @param inlineAnnotatedFunction Execute this function on module load. Useful for service configuration.
          */
         config(inlineAnnotatedFunction: any[]): IModule;
         constant(name: string, value: any): IModule;
         constant(object: Object): IModule;
+        /**
+         * The $controller service is used by Angular to create new controllers.
+         * 
+         * This provider allows controller registration via the register method.
+         * 
+         * @param name Controller name, or an object map of controllers where the keys are the names and the values are the constructors.
+         * @param controllerConstructor Controller constructor fn (optionally decorated with DI annotations in the array notation).
+         */
         controller(name: string, controllerConstructor: Function): IModule;
+        /**
+         * The $controller service is used by Angular to create new controllers.
+         * 
+         * This provider allows controller registration via the register method.
+         * 
+         * @param name Controller name, or an object map of controllers where the keys are the names and the values are the constructors.
+         * @param controllerConstructor Controller constructor fn (optionally decorated with DI annotations in the array notation).
+         */
         controller(name: string, inlineAnnotatedConstructor: any[]): IModule;
         controller(object : Object): IModule;
         directive(name: string, directiveFactory: Function): IModule;
         directive(name: string, inlineAnnotatedFunction: any[]): IModule;
         directive(object: Object): IModule;
+        /**
+         * Register a service factory, which will be called to return the service instance. This is short for registering a service where its provider consists of only a $get property, which is the given service factory function. You should use $provide.factory(getFn) if you do not need to configure your service in a provider.
+         * 
+         * @param name The name of the instance.
+         * @param $getFn The $getFn for the instance creation. Internally this is a short hand for $provide.provider(name, {$get: $getFn}).
+         */
         factory(name: string, serviceFactoryFunction: Function): IModule;
+        /**
+         * Register a service factory, which will be called to return the service instance. This is short for registering a service where its provider consists of only a $get property, which is the given service factory function. You should use $provide.factory(getFn) if you do not need to configure your service in a provider.
+         * 
+         * @param name The name of the instance.
+         * @param inlineAnnotatedFunction The $getFn for the instance creation. Internally this is a short hand for $provide.provider(name, {$get: $getFn}).
+         */
         factory(name: string, inlineAnnotatedFunction: any[]): IModule;
         factory(object: Object): IModule;
         filter(name: string, filterFactoryFunction: Function): IModule;
@@ -236,10 +273,12 @@ declare module ng {
         $watchCollection(watchExpression: string, listener: (newValue: any, oldValue: any, scope: IScope) => any): Function;
         $watchCollection(watchExpression: (scope: IScope) => any, listener: (newValue: any, oldValue: any, scope: IScope) => any): Function;
 
-        $watchGroup(watchExpressions: string[], listener: (newValue: any, oldValue: any, scope: IScope) => any): Function;
+        $watchGroup(watchExpressions: any[], listener: (newValue: any, oldValue: any, scope: IScope) => any): Function;
         $watchGroup(watchExpressions: {(scope: IScope) : any}[], listener: (newValue: any, oldValue: any, scope: IScope) => any): Function;
 
         $parent: IScope;
+
+        $root: IRootScopeService;
 
         $id: string;
 
@@ -589,44 +628,157 @@ declare module ng {
         register(name: string, dependencyAnnotatedConstructor: any[]): void;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // HttpService
-    // see http://docs.angularjs.org/api/ng.$http
-    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * HttpService 
+     * see http://docs.angularjs.org/api/ng/service/$http
+     */
     interface IHttpService {
-        // At least moethod and url must be provided...
-        (config: IRequestConfig): IHttpPromise<any>;
-        get (url: string, RequestConfig?: any): IHttpPromise<any>;
-        delete (url: string, RequestConfig?: any): IHttpPromise<any>;
-        head(url: string, RequestConfig?: any): IHttpPromise<any>;
-        jsonp(url: string, RequestConfig?: any): IHttpPromise<any>;
-        post(url: string, data: any, RequestConfig?: any): IHttpPromise<any>;
-        put(url: string, data: any, RequestConfig?: any): IHttpPromise<any>;
+        /**
+         * Object describing the request to be made and how it should be processed.
+         */
+        <T>(config: IRequestConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform GET request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param config Optional configuration object
+         */
+        get<T>(url: string, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform DELETE request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param config Optional configuration object
+         */
+        delete<T>(url: string, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform HEAD request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param config Optional configuration object
+         */
+        head<T>(url: string, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform JSONP request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param config Optional configuration object
+         */
+        jsonp<T>(url: string, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform POST request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param data Request content
+         * @param config Optional configuration object
+         */
+        post<T>(url: string, data: any, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Shortcut method to perform PUT request.
+         * 
+         * @param url Relative or absolute URL specifying the destination of the request
+         * @param data Request content
+         * @param config Optional configuration object
+         */
+        put<T>(url: string, data: any, config?: IRequestShortcutConfig): IHttpPromise<T>;
+
+        /**
+         * Runtime equivalent of the $httpProvider.defaults property. Allows configuration of default headers, withCredentials as well as request and response transformations.
+         */
         defaults: IRequestConfig;
 
-        // For debugging, BUT it is documented as public, so...
+        /**
+         * Array of config objects for currently pending requests. This is primarily meant to be used for debugging purposes.
+         */
         pendingRequests: any[];
     }
 
-    // This is just for hinting.
-    // Some opetions might not be available depending on the request.
-    // see http://docs.angularjs.org/api/ng.$http#Usage for options explanations
-    interface IRequestConfig {
-        method: string;
-        url: string;
+    /**
+     * Object describing the request to be made and how it should be processed.
+     * see http://docs.angularjs.org/api/ng/service/$http#usage 
+     */
+    interface IRequestShortcutConfig {
+        /**
+         * {Object.<string|Object>}
+         * Map of strings or objects which will be turned to ?key1=value1&key2=value2 after the url. If the value is not a string, it will be JSONified. 
+         */
         params?: any;
 
-        // XXX it has it's own structure...  perhaps we should define it in the future
+        /**
+         * Map of strings or functions which return strings representing HTTP headers to send to the server. If the return value of a function is null, the header will not be sent.
+         */
         headers?: any;
 
+        /**
+         * Name of HTTP header to populate with the XSRF token.
+         */
+        xsrfHeaderName?: string;
+
+        /**
+         * Name of cookie containing the XSRF token.
+         */
+        xsrfCookieName?: string;
+
+        /**
+         * {boolean|Cache}
+         * If true, a default $http cache will be used to cache the GET request, otherwise if a cache instance built with $cacheFactory, this cache will be used for caching.
+         */
         cache?: any;
+
+        /**
+         * whether to to set the withCredentials flag on the XHR object. See [requests with credentials]https://developer.mozilla.org/en/http_access_control#section_5 for more information.
+         */
         withCredentials?: boolean;
 
-        // These accept multiple types, so let's define them as any
+        /**
+         * {string|Object} 
+         * Data to be sent as the request message data.
+         */
         data?: any;
+
+        /**
+         * {function(data, headersGetter)|Array.<function(data, headersGetter)>}
+         * Transform function or an array of such functions. The transform function takes the http request body and headers and returns its transformed (typically serialized) version.
+         */
         transformRequest?: any;
+
+        /**
+         * {function(data, headersGetter)|Array.<function(data, headersGetter)>}
+         * Transform function or an array of such functions. The transform function takes the http response body and headers and returns its transformed (typically deserialized) version.
+         */
         transformResponse?: any;
-        timeout?: any; // number | promise
+
+        /**
+         * {number|Promise}
+         * Timeout in milliseconds, or promise that should abort the request when resolved.
+         */
+        timeout?: any;
+
+        /**
+         * See requestType.
+         */
+        responseType?: string;
+    }
+
+    /**
+     * Object describing the request to be made and how it should be processed.
+     * see http://docs.angularjs.org/api/ng/service/$http#usage 
+     */
+    interface IRequestConfig extends IRequestShortcutConfig {
+        /**
+         * HTTP method (e.g. 'GET', 'POST', etc)
+         */
+        method: string;
+        /**
+         * Absolute or relative URL of the resource that is being requested.
+         */
+        url: string;
     }
 
     interface IHttpPromiseCallback<T> {

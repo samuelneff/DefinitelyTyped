@@ -195,6 +195,7 @@ function Sys_Application_Tests() {
     Sys.Application.findComponent(id, element);
     Sys.Application.findComponent(id, component);
     Sys.Application.findComponent(id);
+
     $find(id, element);
 
     var componentArray = Sys.Application.getComponents();
@@ -234,6 +235,13 @@ function Sys_Browser_Tests() {
     
 }
 
+function Sys_EventArgs_Tests() {
+    
+    var anEventArgs = new Sys.EventArgs();
+    var eventArgs = anEventArgs.Empty;
+
+}
+
 function Sys_CancelEventArgs_Tests() {
 
     var args = new Sys.CancelEventArgs();
@@ -261,8 +269,8 @@ function Sys_CancelEventArgs_Tests() {
     }
 
     var ActivateAlertDiv = function (visString: string, msg: string) {
-        var adiv = $get(divElem);
-        var aspan = $get(messageElem);
+        var adiv = <HTMLElement> $get(divElem);
+        var aspan = <HTMLElement> $get(messageElem);
         adiv.style.visibility = visString;
         aspan.innerHTML = msg;
     }
@@ -314,35 +322,36 @@ function Sys_Component_Tests() {
 
     aComponent.beginUpdate();
 
-    $create(MyControl, { id: 'c1', visible: true }, { click: handler }, null, $get('button1'));
+    var component = $create(MyControl, { id: 'c1', visible: true }, { click: handler }, null, $get('button1'));
 
     aComponent.dispose();
-
     aComponent.endUpdate();
-
     aComponent.initialize();
-
     aComponent.raisePropertyChanged("propertyName");
-
     aComponent.updated();
+
+    var id = aComponent.get_id();
+    aComponent.set_id("#button1");
+    var isInitialized = aComponent.get_isInitialized();
+    var isUpdating = aComponent.get_isUpdating();
 }
 
 function Sys_UI_Key_Tests() {
 
-    var backspace = Sys.UI.Key.backspace;
-    var del = Sys.UI.Key.del;
-    var down = Sys.UI.Key.down;
-    var end = Sys.UI.Key.end;
-    var pageDown = Sys.UI.Key.pageDown;
-    var pageUp = Sys.UI.Key.pageUp;
-    var home = Sys.UI.Key.home;
-    var enter = Sys.UI.Key.enter;
-    var esc = Sys.UI.Key.esc;
-    var tab = Sys.UI.Key.tab;
-    var key = Sys.UI.Key.up;
-    var left = Sys.UI.Key.left;
-    var right = Sys.UI.Key.right;
-    var space = Sys.UI.Key.space;
+    var backspace: number = Sys.UI.Key.backspace;
+    var del: number = Sys.UI.Key.del;
+    var down: number = Sys.UI.Key.down;
+    var end: number = Sys.UI.Key.end;
+    var pageDown: number = Sys.UI.Key.pageDown;
+    var pageUp: number = Sys.UI.Key.pageUp;
+    var home: number = Sys.UI.Key.home;
+    var enter: number = Sys.UI.Key.enter;
+    var esc: number = Sys.UI.Key.esc;
+    var tab: number = Sys.UI.Key.tab;
+    var key: number = Sys.UI.Key.up;
+    var left: number = Sys.UI.Key.left;
+    var right: number = Sys.UI.Key.right;
+    var space: number = Sys.UI.Key.space;
 
 }
 
@@ -363,6 +372,133 @@ function Sys_UI_Control_Tests() {
     a.dispose();
 }
 
+function Sy_UI_Point_Tests() {
+
+    var elementRef: Sys.UI.DomElement;
+    var result: string;
+    // Get the location of the element
+    var elementLoc = Sys.UI.DomElement.getLocation(elementRef);
+    result += "Before move - Label1 location (x,y) = (" +
+    elementLoc.x + "," + elementLoc.y + ")<br/>";
+    // Move the element
+    Sys.UI.DomElement.setLocation(elementRef, 100, elementLoc.y);
+    elementLoc = Sys.UI.DomElement.getLocation(elementRef);
+    result += "After move  - Label1 location (x,y) = (" +
+    elementLoc.x + "," + elementLoc.y + ")<br/>";
+
+}
+
+function Sys_UI_DomEvent_Tests() {
+
+    var object: any;
+
+    Sys.UI.DomEvent.addHandler(object, "eventName", () => { });
+    Sys.UI.DomEvent.addHandler(object, "eventName", () => { }, true);
+
+    Sys.UI.DomEvent.addHandlers(object, object, object, true);
+    Sys.UI.DomEvent.removeHandler(object, "eventName", () => { });
+    Sys.UI.DomEvent.clearHandlers(object);
+
+    var domEvent = new Sys.UI.DomEvent(object);
+    var altKey: boolean = domEvent.altKey;
+    var mouseButton: Sys.UI.MouseButton = domEvent.button;
+    var charCode: number = domEvent.charCode;
+    var clientX: number = domEvent.clientX;
+    var ctrlKey: boolean = domEvent.ctrlKey;
+    var screenX: number = domEvent.screenX;
+    var screenY: number = domEvent.screenY;
+    var target: any = domEvent.target;
+    var shiftKey: boolean = domEvent.shiftKey;
+    var type: string = domEvent.type;
+}
+
+function Sys_UI_DomElement_Tests() {
+    
+    // Add CSS class
+    Sys.UI.DomElement.addCssClass($get("Button1"), "redBackgroundColor");
+
+    var elementRef: Sys.UI.DomElement = $get("Label1");
+    var elementBounds = Sys.UI.DomElement.getBounds(elementRef);
+    var toggleCssClassMethod = () => {};
+    var removeCssClassMethod = () => {};
+    var containsClass = Sys.UI.DomElement.containsCssClass(elementRef, "class-name");
+
+    // Add handler using the getElementById method
+    $addHandler(Sys.UI.DomElement.getElementById("Button1"), "click", toggleCssClassMethod);
+    // Add handler using the shortcut to the getElementById method
+    $addHandler($get("Button2"), "click", removeCssClassMethod);
+
+    Sys.UI.DomElement.toggleCssClass($get("id"), "redBackgroundColor");
+
+
+    // Add handlers using the $get shortcut to the 
+    // Sys.UI.DomElement.getElementById method
+    $addHandler($get("Button1"), "click", toggleVisible);
+    $addHandler($get("Button2"), "click", toggleVisibilityMode);
+
+    // This method is called when Button2 is clicked.
+    function toggleVisible() {
+        var anElement = $get("Label1");
+        if (Sys.UI.DomElement.getVisible(anElement)) {
+            Sys.UI.DomElement.setVisible(anElement, false);
+        }
+        else {
+            Sys.UI.DomElement.setVisible(anElement, true);
+        }
+    }
+    
+    // This method is called when Button1 is clicked.
+    function toggleVisibilityMode() {
+
+        var anElement = $get("Label1");
+
+        var visMode = Sys.UI.DomElement.getVisibilityMode(anElement);
+
+        var status = visMode;
+
+        if (visMode === 0) {
+            Sys.UI.DomElement.setVisibilityMode(anElement, Sys.UI.VisibilityMode.collapse);
+            if (document.all) {
+                anElement.innerText =
+                "Label1  VisibilityMode: Sys.UI.VisibilityMode.collapse";
+            }
+            else {
+                //Firefox
+                anElement.textContent =
+                "Label1  VisibilityMode: Sys.UI.VisibilityMode.collapse";
+            }
+        }
+        else {
+            Sys.UI.DomElement.setVisibilityMode(anElement, Sys.UI.VisibilityMode.hide);
+            if (document.all) {
+                anElement.innerText = "Label1  VisibilityMode: Sys.UI.VisibilityMode.hide";
+            }
+            else {
+                //Firefox
+                anElement.textContent = "Label1  VisibilityMode: Sys.UI.VisibilityMode.hide";
+            }
+        }
+    }
+
+
+}
+
+function Sys_Debug_Tests() {
+    
+    var condition = true;
+
+    Sys.Debug.assert(condition);
+    Sys.Debug.assert(condition, "true");
+    Sys.Debug.assert(condition, "true", true);
+
+    var obj = {};
+    Sys.Debug.traceDump(obj, "Name");
+    Sys.Debug.trace("Trace text");
+    Sys.Debug.fail("Fail message");
+
+    Sys.Debug.clearTrace();
+}
+
 function Sys_CultureInfo_Tests() {
 
     var currentCultureInfoObj = Sys.CultureInfo.CurrentCulture;
@@ -375,6 +511,68 @@ function Sys_CultureInfo_Tests() {
     var format = newCulture.dateTimeFormat;
     var name = newCulture.name;
     var numberFormat = newCulture.numberFormat;
+}
+
+function Sys_Res_Tests() {
+
+    var actualValue = Sys.Res.actualValue;
+    var appLoadTimedout = Sys.Res.appLoadTimedout;
+    var argument = Sys.Res.argument;
+    var argumentNull = Sys.Res.argumentNull;
+    var argumentOutOfRange = Sys.Res.argumentOutOfRange;
+    var argumentType = Sys.Res.argumentType;
+    var argumentTypeWithTypes = Sys.Res.argumentTypeWithTypes;
+    var argumentUndefined = Sys.Res.argumentUndefined;
+    var assertFailed = Sys.Res.assertFailed;
+    var assetFailedCaller = Sys.Res.assetFailedCaller;
+    var badBaseUrl1 = Sys.Res.badBaseUrl1;
+    var badBaseUrl2 = Sys.Res.badBaseUrl2;
+    var badBaseUrl3 = Sys.Res.badBaseUrl3;
+    var breakIntoDebugger = Sys.Res.breakIntoDebugger;
+    var cannotAbortBeforeStart = Sys.Res.cannotAbortBeforeStart;
+    var cannotCallBeforeResponse = Sys.Res.cannotCallBeforeResponse;
+    var cannotCallOnceStarted = Sys.Res.cannotCallOnceStarted;
+    var cannotCallOutsideHandler = Sys.Res.cannotCallOutsideHandler;
+    var cannotDeserializeEmptyString = Sys.Res.cannotDeserializeEmptyString;
+    var cannotSerializeNonFiniteNumbers = Sys.Res.cannotSerializeNonFiniteNumbers;
+    var controlCantSetId = Sys.Res.controlCantSetId;
+    var enumInvalidValue = Sys.Res.enumInvalidValue;
+    var eventHandlerInvalid = Sys.Res.eventHandlerInvalid;
+    var format = Sys.Res.format;
+    var formatBadDate = Sys.Res.formatBadDate;
+    var formatBadFormatSpecifier = Sys.Res.formatBadFormatSpecifier;
+    var formatInvalidString = Sys.Res.formatInvalidString;
+    var invalidExecutorType = Sys.Res.invalidExecutorType;
+    var invalidHttpVerb = Sys.Res.invalidHttpVerb;
+    var invalidOperation = Sys.Res.invalidOperation;
+    var invalidTimeout = Sys.Res.invalidTimeout;
+    var invokeCalledTwice = Sys.Res.invokeCalledTwice;
+    var notImplemented = Sys.Res.notImplemented;
+    var nullWebRequest = Sys.Res.nullWebRequest;
+}
+
+function Sys_StringBuilder_Tests() {
+    
+    // Example taken from http://msdn.microsoft.com/en-us/library/bb310852(v=vs.100).aspx
+    function buildAString(title: string) {
+        var headTagStart = "<head>";
+        var headTagEnd = "</head>";
+        var titleTagStart = "<title>";
+        var titleTagEnd = "</title>";
+
+        var sb = new Sys.StringBuilder(this._headTagStart);
+        sb.append(titleTagEnd);
+        sb.append(title);
+        sb.append(titleTagEnd);
+        sb.append(headTagEnd);
+        // Displays: "The result: <head><title>A Title</title></head>"
+        alert("The result" + sb.toString());
+    }
+
+    var title = "A Title";
+    buildAString(title);
+
+
 }
 
 function Sys_Services_Profile_Service_Group_Tests() {
@@ -408,6 +606,99 @@ function Sys_Services_Profile_Service_Group_Tests() {
 
     var timeout = Sys.Services.ProfileService.get_timeout();
 
+}
+
+function Sys_Net_NetworkRequestEventArgs_Tests() {
+
+    var value = new Sys.Net.WebRequest();
+    var netWorkEventArgs = new Sys.Net.NetWorkRequestEventArgs(value);
+    var webRequest = netWorkEventArgs.get_webRequest();
+}
+
+function Sys_Net_WebRequestManager_Tests() {
+    
+    var handler = (sender: any, args: any) => { }
+
+    Sys.Net.WebRequestManager.add_completedRequest(handler);
+    Sys.Net.WebRequestManager.add_invokingRequest(handler);
+    Sys.Net.WebRequestManager.executeRequest(new Sys.Net.WebRequest());
+    Sys.Net.WebRequestManager.remove_completedRequest(handler);
+    Sys.Net.WebRequestManager.set_defaultTimeout(100);
+    var customDefaultTimeout = Sys.Net.WebRequestManager.get_defaultTimeout();
+
+}
+
+function Sys_WebForms_PageRequestManager_Tests() {
+
+    var pageRequestManager: Sys.WebForms.PageRequestManager = Sys.WebForms.PageRequestManager.getInstance();
+
+    var beginRequestHandler = (sender: any, args: Sys.WebForms.BeginRequestEventArgs) => {
+        var postBackElement: HTMLElement = args.get_postBackElement();
+        var webRequest: Sys.Net.WebRequest = args.get_request();
+        var updatePanelsToUpdate: string[] = args.get_updatePanelsToUpdate();
+        var empty: Sys.EventArgs = args.Empty;
+    }
+    var endRequestHandler = (sender: any, args: Sys.WebForms.EndRequestEventArgs) => {
+        var dataItems: any = args.get_dataItems();
+        var error: Error = args.get_error();
+        var errorHandled: boolean = args.get_errorHandled();
+        var webRequestExecutor: Sys.Net.WebRequestExecutor = args.get_response();
+        args.set_errorHandled(true);
+
+    }
+    var initializeRequestHandler = (sender: any, args: Sys.WebForms.InitializeRequestEventArgs) => {
+        var postBackElement: HTMLElement = args.get_postBackElement();
+        var webRequestExecutor: Sys.Net.WebRequestExecutor = args.get_request();
+        var updatePanelsToUpdate: string[] = args.get_updatePanelsToUpdate();
+        var empty: Sys.EventArgs = args.Empty;
+    }
+    var pageLoadedRequestHandler = (sender: any, args: Sys.WebForms.PageLoadedEventArgs) => {
+        var dataItems: any = args.get_dataItems();
+        var panelsCreated: HTMLDivElement[] = args.get_panelsCreated();
+        var panelsUpdated: HTMLDivElement[] = args.get_panelsUpdated();
+        var empty: Sys.EventArgs = args.Empty;
+    }
+    var pageLoadingRequestHandler = (sender: any, args: Sys.WebForms.PageLoadingEventArgs) => {
+        var dataItems: any = args.get_dataItems();
+        var panelsDeleted: HTMLDivElement[] = args.get_panelsDeleted();
+        var panelsUpdating = args.get_panelsUpdating();
+        var empty: Sys.EventArgs = args.Empty;
+    }
+
+
+    var isInAsyncPostBack: boolean = pageRequestManager.get_isInAsyncPostBack();
+    
+    pageRequestManager.add_beginRequest(beginRequestHandler);
+    pageRequestManager.add_endRequest(endRequestHandler);
+    pageRequestManager.add_initializeRequest(initializeRequestHandler);
+    pageRequestManager.add_pageLoading(pageLoadingRequestHandler);
+    pageRequestManager.add_pageLoaded(pageLoadedRequestHandler);
+    pageRequestManager.remove_beginRequest(beginRequestHandler);
+    pageRequestManager.remove_pageLoaded(pageLoadedRequestHandler);
+    pageRequestManager.remove_pageLoading(pageLoadingRequestHandler);
+    pageRequestManager.beginAsyncPostBack();
+    pageRequestManager.abortPostBack();
+    pageRequestManager.dispose();
+}
+
+function Sys_WebForms_EndRequestEventArgs_Tests() {
+    
+    var pageRequestManager: Sys.WebForms.PageRequestManager = Sys.WebForms.PageRequestManager.getInstance();
+
+    var handler = (sender: any, args: Sys.WebForms.EndRequestEventArgs) => {
+        
+        var error: Error = args.get_error();
+        var message: string = error.message;
+        var name: string = error.name;
+        var response: Sys.Net.WebRequestExecutor = args.get_response();
+        var dataItems: any = args.get_dataItems();
+        var eventArgs: Sys.EventArgs = args.Empty;
+
+        args.set_errorHandled(true);
+        var errorHandled: boolean = args.get_errorHandled();
+    }
+
+    pageRequestManager.add_endRequest(handler);
 }
 
 function AspNetTypes_Tests() {
@@ -446,7 +737,6 @@ function AspNetTypes_Tests() {
     // Output: "true".
     alert(implementsInterface);
 }
-
 
 /** Sample code from http://msdn.microsoft.com/en-us/library/bb386520(v=vs.100).aspx */
 function CreatingCustomNonVisualClientComponentsTests() {
