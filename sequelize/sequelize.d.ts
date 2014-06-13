@@ -6,7 +6,7 @@ interface Sequelize
      * @param database database name
      * @param username user name
      */
-    (database:string, username:string);
+    new(database:string, username:string):Sequelize;
 
     /**
      * Instantiate sequelize with name of database, username and password
@@ -14,7 +14,7 @@ interface Sequelize
      * @param username user name
      * @param password password
      */
-    (database:string, username:string, password: string);
+    new(database:string, username:string, password: string):Sequelize;
 
     /**
      * Instantiate sequelize with name of database, username, password, and options.
@@ -23,7 +23,7 @@ interface Sequelize
      * @param password password
      * @param options options. @see SequelizeOptions
      */
-    (database:string, username:string, password: string, options:SequelizeOptions);
+    new(database:string, username:string, password: string, options:SequelizeOptions):Sequelize;
 
     /**
      * Instantiate sequelize with name of database, username, and options.
@@ -32,14 +32,14 @@ interface Sequelize
      * @param username user name
      * @param options options. @see SequelizeOptions
      */
-    (database:string, username:string, options:SequelizeOptions);
+    new(database:string, username:string, options:SequelizeOptions):Sequelize;
 
     /**
      * Instantiate sequlize with an URI
      * @param connectionString A full database URI
      * @param options Options for sequelize. @see SequelizeOptions
      */
-    (connectionString:string, options:SequelizeOptions);
+    new(connectionString:string, options:SequelizeOptions):Sequelize;
 
     /**
      * Models are stored here under the name given to sequelize.define
@@ -855,7 +855,7 @@ interface SequelizeEventEmitter
     /**
      * Create a new emitter instance.
      *
-     * @param emitter
+     * @param handler
      */
     new(handler:(emitter:SequelizeEventEmitter) => void):SequelizeEventEmitter;
 
@@ -889,21 +889,21 @@ interface SequelizeEventEmitter
     /**
      * Listen for error events.
      *
-     * @param onSuccess
+     * @param onError
      */
     error(onError:(err:Error) => void):SequelizeEventEmitter;
 
     /**
      * Alias for error(handler). Listen for error events.
      *
-     * @param onSuccess
+     * @param onError
      */
     fail(onError:(err:Error) => void):SequelizeEventEmitter;
 
     /**
      * Alias for error(handler). Listen for error events.
      *
-     * @param onSuccess
+     * @param onError
      */
     failure(onError:(err:Error) => void):SequelizeEventEmitter;
 
