@@ -1,3 +1,4 @@
+/// <reference path="../node/node.d.ts" />
 
 interface Sequelize
 {
@@ -850,7 +851,7 @@ interface SequelizeAssociations
     hasMany<T>(target:SequelizeModel<T>, options?:SequelizeAssociationOptions):void;
 }
 
-interface SequelizeEventEmitter
+interface SequelizeEventEmitter extends NodeJS.EventEmitter
 {
     /**
      * Create a new emitter instance.
@@ -863,14 +864,6 @@ interface SequelizeEventEmitter
      * Run the function that was passed when the emitter was instantiated.
      */
     run():SequelizeEventEmitter;
-
-    /**
-     * Emit an event from the emitter.
-     *
-     * @param type  The type of event.
-     * @param args  All other arguments will be passed to the event listeners.
-     */
-    emit(type:string, ...args:Array<any>):void;
 
     /**
      * Listen for success events.
