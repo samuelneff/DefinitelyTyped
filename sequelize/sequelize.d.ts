@@ -1,4 +1,6 @@
 /// <reference path="../node/node.d.ts" />
+/// <reference path="../lodash/lodash.d.ts" />
+/// <reference path="../underscore.string/underscore.string.d.ts" />
 
 interface Sequelize
 {
@@ -43,9 +45,14 @@ interface Sequelize
     new(connectionString:string, options:SequelizeOptions):Sequelize;
 
     /**
+     * Sequelize configuration (undocumented).
+     */
+    config:SequelizeConfig;
+    
+    /**
      * Models are stored here under the name given to sequelize.define
      */
-    models:Array<SequelizeModel<any>>;
+    models:Array<SequelizeModel<any, any>>;
 
     /**
      * A reference to sequelize utilities. Most users will not need to use these utils directly. However, you might want
@@ -74,7 +81,7 @@ interface Sequelize
      *
      * @see SequelizeTransaction
      */
-    Transaction:SequelizeTransaction;
+    Transaction:SequelizeTransactionStatic;
 
     /**
      * A general error class.
@@ -115,14 +122,14 @@ interface Sequelize
      *                   options object. @see SequelizeAttributeOptions.
      * @param options Table options. @see SequelizeDefineOptions.
      */
-    define(daoName:string, attributes:Object, options?:SequelizeDefineOptions):SequelizeModel;
+    define<TInstance, TPojo>(daoName:string, attributes:Object, options?:SequelizeDefineOptions):SequelizeModel<TInstance, TPojo>;
 
     /**
      * Fetch a DAO factory which is already defined.
      *
      * @param daoName The name of a model defined with Sequelize.define.
      */
-    model(daoName:string):SequelizeModel;
+    model<TInstance, TPojo>(daoName:string):SequelizeModel<TInstance, TPojo>;
 
     /**
      * Checks whether a model with the given name is defined.
@@ -137,7 +144,7 @@ interface Sequelize
      * @param path  The path to the file that holds the model you want to import. If the part is relative, it will be
      *              resolved relatively to the calling file
      */
-    import(path:string):SequelizeModel;
+    import<TInstance, TPojo>(path:string):SequelizeModel<TInstance, TPojo>;
 
     /**
      * Execute a query on the DB, with the posibility to bypass all the sequelize goodness.
@@ -291,7 +298,25 @@ interface Sequelize
     transaction(options:SequelizeTransactionOptions, callback:(transaction:SequelizeTransaction) => void):SequelizeTransaction;
 }
 
-interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
+interface SequelizeConfig
+{
+    database?:string;
+    username?:string;
+    password?:string;
+    host?:string;
+    port?:number;
+    pool?:SequelizePoolOptions;
+    protocol?:string;
+    queue?:boolean;
+    native?:boolean;
+    ssl?:boolean;
+    replication?:SequelizeReplicationOptions;
+    dialectModulePath?:string;
+    maxConcurrentQueries?:number;
+    dialectOptions?:Object;
+}
+
+interface SequelizeModel<TInstance, TPojo> extends SequelizeHooks, SequelizeAssociations
 {
     /**
      * A reference to the sequelize instance.
@@ -302,7 +327,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * Sync this Model to the DB, that is create the table. Upon success, the callback will be called with the model
      * instance (this).
      */
-    sync():SequelziePromiseT<SequelizeModel<T>>;
+    sync():SequelizePromiseT<SequelizeModel<TInstance, TPojo>>;
 
     /**
      * Drop the table represented by this Model.
@@ -319,7 +344,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param schema    The name of the schema.
      * @param options   Schema options.
      */
-    schema(schema:string, options?:SequelizeSchemaOptions):SequelizeModel;
+    schema(schema:string, options?:SequelizeSchemaOptions):SequelizeModel<TInstance, TPojo>;
 
     /**
      * Get the tablename of the model, taking schema into account. The method will return The name as a string if the
@@ -336,7 +361,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      *                arguments, or an array, where the first element is the name of the method, and consecutive
      *                elements are arguments to that method. Pass null to remove all scopes, including the default.
      */
-    scope(options:any):SequelizeModel;
+    scope(options:any):SequelizeModel<TInstance, TPojo>;
 
     /**
      * Search for multiple instances..
@@ -345,7 +370,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param queryOptions  Set the query options, e.g. raw, specifying that you want raw data instead of built
      *                      Instances. See sequelize.query for options.
      */
-    findAll(options?:SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<Array<T>>;
+    findAll(options?:SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<Array<TInstance>>;
 
     /**
      * Search for a single instance. This applies LIMIT 1, so the listener will always be called with a single instance.
@@ -354,7 +379,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param queryOptions  Set the query options, e.g. raw, specifying that you want raw data instead of built
      *                      Instances. See sequelize.query for options
      */
-    find(options?:SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<T>;
+    find(options?:SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<TInstance>;
 
     /**
      * Run an aggregation method on the specified field.
@@ -379,7 +404,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param findOptions   Filtering options
      * @param queryOptions  Query options
      */
-    findAndCountAll(findOptions?: SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<SequelizeFindAndCountResult<T>>;
+    findAndCountAll(findOptions?: SequelizeFindOptions, queryOptions?:SequelizeQueryOptions):SequelizePromiseT<SequelizeFindAndCountResult<TInstance>>;
 
     /**
      * Find the maximum value of field.
@@ -411,7 +436,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param values    Object from which to build entity instance.
      * @param options   Object construction options.
      */
-    build(values:T, options?:SequelizeBuildOptions):T;
+    build(values:TPojo, options?:SequelizeBuildOptions):TInstance;
 
     /**
      * Builds a new model instance and calls save on it..
@@ -419,7 +444,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param values
      * @param options
      */
-    create(values:T, options?:SequelizeCopyOptions):SequelizePromiseT<T>;
+    create(values:TPojo, options?:SequelizeCopyOptions):SequelizePromiseT<TInstance>;
 
     /**
      * Find a row that matches the query, or build (but don't save) the row if none is found. The successfull result
@@ -430,7 +455,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param defaults  Default values to use if building a new instance
      * @param options   Options passed to the find call
      */
-    findOrInitialize(where:Object, defaults?:T, options?:SequelizeQueryOptions):SequelizePromiseT<T>;
+    findOrInitialize(where:Object, defaults?:TPojo, options?:SequelizeQueryOptions):SequelizePromiseT<TInstance>;
 
     /**
      * Find a row that matches the query, or build and save the row if none is found The successfull result of the
@@ -441,7 +466,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param defaults  Default values to use if creating a new instance
      * @param options   Options passed to the find and create calls.
      */
-    findOrCreate(where:Object, defaults?:T, options?:SequelizeFindOrCreateOptions):SequelizePromiseT<T>;
+    findOrCreate(where:Object, defaults?:TPojo, options?:SequelizeFindOrCreateOptions):SequelizePromiseT<TInstance>;
 
     /**
      * Create and insert multiple instances in bulk.
@@ -449,7 +474,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param records   List of objects (key/value pairs) to create instances from.
      * @param options
      */
-    bulkCreate(records:Array, options?:SequelizeBulkCreateOptions):SequelizePromiseT<Array<T>>;
+    bulkCreate(records:Array<TPojo>, options?:SequelizeBulkCreateOptions):SequelizePromiseT<Array<TInstance>>;
 
     /**
      * Delete multiple instances.
@@ -463,7 +488,7 @@ interface SequelizeModel<T> extends SequelizeHooks, SequelizeAssociations
      * @param where         Options to describe the scope of the search. Note that these options are not wrapped in a
      *                      { where: ... } is in find / findAll calls etc. This is probably due to change in 2.0.
      */
-    update(attrValueHash:T, where:Object, options?:SequelizeUpdateOptions):SequelizePromise;
+    update(attrValueHash:TPojo, where:Object, options?:SequelizeUpdateOptions):SequelizePromise;
 
     /**
      * Run a describe query on the table. The result will be return to the listener as a hash of attributes and their
@@ -488,7 +513,7 @@ interface SequelizeInstance<TInstance, TPojo>
     /**
      * Returns the Model the instance was created from.
      */
-    Model:SequelizeModel<TInstance>;
+    Model:SequelizeModel<TInstance, TPojo>;
 
     /**
      * A reference to the sequelize instance.
@@ -629,14 +654,14 @@ interface SequelizeInstance<TInstance, TPojo>
 interface SequelizeTransaction extends SequelizeTransactionStatic
 {
     /**
-     * The possible isolation levels to use when starting a transaction
+     * Commit the transaction.
      */
-    ISOLATION_LEVELS:SequelizeTransactionIsolationLevels;
+    commit():SequelizeTransaction;
 
     /**
-     * Possible options for row locking. Used in conjuction with find calls.
+     * Rollback (abort) the transaction.
      */
-    LOCK:SequelizeTransactionLocks;
+    rollback():SequelizeTransaction;
 }
 
 interface SequelizeTransactionStatic
@@ -832,7 +857,7 @@ interface SequelizeAssociations
      * @param target
      * @param options
      */
-    hasOne<T>(target:SequelizeModel<T>, options?:SequelizeAssociationOptions):void;
+    hasOne<TInstance, TPojo>(target:SequelizeModel<TInstance, TPojo>, options?:SequelizeAssociationOptions):void;
 
     /**
      * Creates an association between this (the source) and the provided target. The foreign key is added on the source.
@@ -840,7 +865,7 @@ interface SequelizeAssociations
      * @param target
      * @param options
      */
-    belongsTo<T>(target:SequelizeModel<T>, options?:SequelizeAssociationOptions):void;
+    belongsTo<TInstance, TPojo>(target:SequelizeModel<TInstance, TPojo>, options?:SequelizeAssociationOptions):void;
 
     /**
      * Create an association that is either 1:m or n:m.
@@ -848,7 +873,201 @@ interface SequelizeAssociations
      * @param target
      * @param options
      */
-    hasMany<T>(target:SequelizeModel<T>, options?:SequelizeAssociationOptions):void;
+    hasMany<TInstance, TPojo>(target:SequelizeModel<TInstance, TPojo>, options?:SequelizeAssociationOptions):void;
+}
+
+/**
+ * Extension of external project that doesn't have definitions.
+ *
+ * See https://github.com/chriso/validator.js and https://github.com/sequelize/sequelize/blob/master/lib/instance-validator.js
+ */
+interface SequelizeValidator
+{
+
+}
+
+/**
+ * Custom class defined, but no extra methods or functionality even.
+ */
+interface SequelizeValidationError extends Error
+{
+
+}
+
+interface SequelizeQueryChainer
+{
+    /**
+     * Add an query to the chainer. This can be done in two ways - either by invoking the method like you would
+     * normally, and then adding the returned emitter to the chainer, or by passing the class that you want to call a
+     * method on, the name of the method, and its parameters to the chainer. The second form might sound a bit
+     * cumbersome, but it is used when you want to run queries in serial.
+     *
+     * @param emitterOrKlass
+     * @param method
+     * @param params
+     * @param options
+     */
+    add(emitterOrKlass:any, method?:string, params?:any, options?:any):SequelizeQueryChainer;
+
+    /**
+     * Run the query chainer. In reality, this means, wait for all the added emitters to finish, since the queries
+     * began executing as soon as you invoked their methods.
+     */
+    run():SequelizeEventEmitter;
+
+    /**
+     * Run the chainer serially, so that each query waits for the previous one to finish before it starts.
+     *
+     * @param options @see SequelizeQueryChainerRunSeriallyOptions
+     */
+    runSerially(options?:SequelizeQueryChainerRunSeriallyOptions):SequelizeEventEmitter;
+}
+
+interface SequelizeQueryInterface
+{
+    /**
+     * Queries the schema (table list).
+     * 
+     * @param schema The schema to query. Applies only to Postgres.
+     */
+    createSchema(schema?:string):SequelizeEventEmitter;
+
+    /**
+     * Drops the specified schema (table).
+     * 
+     * @param schema The name of the table to drop.
+     */
+    dropSchema(schema:string):SequelizeEventEmitter;
+
+    /**
+     * Drops all tables.
+     */
+    dropAllSchemas():SequelizeEventEmitter;
+
+    /**
+     * Queries all table names in the database.
+     * 
+     * @param options
+     */
+    showAllSchemas(options?:SequelizeQueryOptions):SequelizeEventEmitter;
+
+    /**
+     * Creates a table with specified attributes. 
+     * @param tableName     Name of table to create
+     * @param attributes    Hash of attributes, key is attribute name, value is data type
+     * @param options       Query options.
+     * 
+     * @return The return type will be a Promise when dialect is Postgres and an EventEmitter for MySQL and SQLite.
+     */
+    createTable(tableName:string, attributes:Object, options?:SequelizeQueryOptions):any;
+
+    /**
+     * Drops the specified table.
+     * 
+     * @param tableName Table name.
+     * @param options   Query options, particularly "force".
+     */
+    dropTable(tableName:string, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    dropAllTables(options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    dropAllEnums(options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    renameTable(before:string, after:string):SequelizeEventEmitter;
+    showAllTables(options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    describeTable(tableName:string, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    addColumn(tableName:string, attributeName:Object, dataTypeOrOptions?:any):SequelizeEventEmitter;
+    removeColumn(tableName:string, attributeName:string):SequelizeEventEmitter;
+    changeColumn(tableName:string, attributeName:string, dataTypeOrOptions:any):SequelizeEventEmitter;
+    renameColumn(tableName:string, attrNameBefore:string, attrNameAfter:string):SequelizeEventEmitter;
+    addIndex(tableName:string, attributes:Array<any>, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    showIndex(tableName, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    getForeignKeysForTables(tableNames:Array<string>):SequelizeEventEmitter;
+    removeIndex(tableName:string, attributes:Array<string>):SequelizeEventEmitter;
+    removeIndex(tableName:string, indexName:string):SequelizeEventEmitter;
+    insert<TModel>(dao:TModel, tableName:string, values:Object, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    /**
+     * Inserts several records into the specified table.
+     * @param tableName     Table to insert into.
+     * @param records       Array of key/value pairs to insert as records.
+     * @param options       Query options
+     * @param attributes    For Postgres only, used to identify if an attribute is auto-increment and thus handled specially.
+     */
+    bulkInsert(tableName:string, records:Array<Object>, options?:SequelizeQueryOptions, attributes?:Object):SequelizeEventEmitter;
+    
+    update<TModel>(dao:TModel, tableName:string, values:Array<Object>, where:any, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    bulkUpdate(tableName:string, values:Array<Object>, where:any, options?:SequelizeQueryOptions, attributes?:Object):SequelizeEventEmitter;
+    delete<TModel>(dao:TModel, tableName:string, where:any, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    bulkDelete(tableName:string, where:any, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    bulkDelete<TModel>(tableName:string, where:any, options:SequelizeQueryOptions, model:TModel):SequelizeEventEmitter;
+    select<TModel>(factory:TModel, tableName:string, scope?:Object, queryOptions?:SequelizeQueryOptions):SequelizeEventEmitter;
+    increment<TModel>(dao:TModel, tableName:string, values:Array<Object>, where:any, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    rawSelect<TModel>(tableName:string, options:SequelizeQueryOptions, attributeSelector:string, model:TModel):SequelizeEventEmitter;
+    /**
+     * Postgres only. Creates a trigger on specified table to call the specified function with supplied parameters.
+     *
+     * @param tableName
+     * @param triggerName
+     * @param timingType
+     * @param fireOnArray
+     * @param functionName
+     * @param functionParams
+     * @param optionsArray
+     */
+    createTrigger(tableName:string, triggerName:string, timingType:string, fireOnArray:Array<Object>, functionName:string, functionParams:Array<Object>, optionsArray:Array<string>):SequelizeEventEmitter;
+    /**
+     * Postgres only. Drops the specified trigger.
+     *
+     * @param tableName
+     * @param triggerName
+     */
+    dropTrigger(tableName:string, triggerName:string):SequelizeEventEmitter;
+    renameTrigger(tableName:string, oldTriggerName:string, newTriggerName:string):SequelizeEventEmitter;
+    createFunction(functionName:string, params:Array<Object>, returnType:string, language:string, body:string, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    dropFunction(functionName:string, params:Array<Object>):SequelizeEventEmitter;
+    renameFunction(oldFunctionName:string, params:Array<Object>, newFunctionName:string):SequelizeEventEmitter;
+    /**
+     * Escape an identifier (e.g. a table or attribute name). If force is true,
+     * the identifier will be quoted even if the `quoteIdentifiers` option is
+     * false.
+     */
+    quoteIdentifier(identifier:string, force:boolean):SequelizeEventEmitter;
+    quoteTable(tableName:string):SequelizeEventEmitter;
+    quoteIdentifiers(identifiers:string, force:boolean):SequelizeEventEmitter;
+    escape(value:string):SequelizeEventEmitter;
+    setAutocommit(transaction:SequelizeTransaction, value:boolean):SequelizeEventEmitter;
+    setIsolationLevel(transaction:SequelizeTransaction, value:string):SequelizeEventEmitter;
+    startTransaction(transaction:SequelizeTransaction, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    commitTransaction(transaction:SequelizeTransaction, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+    rollbackTransaction(transaction:SequelizeTransaction, options?:SequelizeQueryOptions):SequelizeEventEmitter;
+}
+
+interface SequelizeMigrator
+{
+    queryInterface:SequelizeQueryInterface;
+    migrate(options?:SequelizeMigratorOptions):SequelizeEventEmitter;
+    getUndoneMigrations(callback:(err:Error, result:Array<SequelizeMigrator>) => void):void;
+    findOrCreateSequelizeMetaDAO(syncOptions?:SequelizeSyncOptions):SequelizeEventEmitter;
+    exec(filename:string, options?:SequelizeMigratorExecOptions):SequelizeEventEmitter;
+    getLastMigrationFromDatabase():SequelizeEventEmitter;
+    getLastMigrationIdFromDatabase():SequelizeEventEmitter;
+    getFormattedDateString(s:string):string;
+    stringToDate(s:string):Date;
+    saveSuccessfulMigration(from:SequelizeMigration, to:SequelizeMigration, callback:(metaData:SequelizeMetaInstance) => void):void;
+    deleteUndoneMigration(from:SequelizeMigration, to:SequelizeMigration, callback:() => void);
+    execute(options?:SequelizeMigrationExecuteOptions):SequelizeEventEmitter;
+    isBefore(date:Date, options?:SequelizeMigrationCompareOptions):boolean;
+    isAfter(date:Date, options?:SequelizeMigrationCompareOptions):boolean;
+
+}
+
+interface SequelizeMigration extends SequelizeQueryInterface
+{
+    migrator:SequelizeMigrator;
+    path:string;
+    filename:string;
+    migrationId:number;
+    date:Date;
+    queryInterface:SequelizeQueryInterface;
+    migration:(err:Error, migration:SequelizeMigration, dataTypes:Object, callback:(err:Error) => void) => void;
+
 }
 
 interface SequelizeEventEmitter extends NodeJS.EventEmitter
@@ -1030,9 +1249,11 @@ interface SequelizePoolOptions
 
     /**
      * A function that validates a connection. Called with client. The default function checks that client is an
-     * object, and that its state is not disconnected
+     * object, and that its state is not disconnected.
+     *
+     * Note, this is not documented, and after reading code I'm not sure what client's type is.
      */
-    validateConnection?:(client?: SequelizeClient) => boolean;
+    validateConnection?:(client?: any) => boolean;
 }
 
 interface SequelizeAttributeOptions
@@ -1284,6 +1505,21 @@ interface SequelizeSyncOptions
      * Default 'public'.
      */
     schema?:string;
+}
+
+interface SequelizeReplicationOptions
+{
+    read?:Array<SequelizeServer>;
+    write?:SequelizeServer;
+}
+
+interface SequelizeServer
+{
+    host?:string;
+    port?:number;
+    database?:string;
+    username?:string;
+    password?:string;
 }
 
 interface SequelizeDropOptions
@@ -1553,6 +1789,13 @@ interface SequelizeAssociationOptions
     constraints?:boolean;
 }
 
+interface SequelizeMigratorOptions
+{
+    /**
+     * A flag that defines if the migrator should get instantiated or not..
+     */
+    force:boolean;
+}
 interface SequelizeFindAndCountResult<T>
 {
     /**
@@ -1625,12 +1868,40 @@ interface SequelizeTransactionOptions
     /**
      *
      */
-    autocommit:boolean;
+    autocommit?:boolean;
 
     /**
      * One of: 'READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'. Default 'REPEATABLE READ'.
      */
-    isolationLevel:string;
+    isolationLevel?:string;
+}
+
+interface SequelizeQueryChainerRunSeriallyOptions
+{
+    /**
+     * If set to true, all pending emitters will be skipped if a previous emitter failed. Default false.
+     */
+    skipOnError:boolean;
+}
+
+interface SequelizeMigratorExecOptions
+{
+    before?:(migrator:SequelizeMigrator) => void;
+    after?:(migrator:SequelizeMigrator) => void;
+    success?:(migrator:SequelizeMigrator) => void;
+}
+
+interface SequelizeMigrationExecuteOptions
+{
+    method: string;
+}
+
+interface SequelizeMigrationCompareOptions
+{
+    /**
+     * Default false.
+     */
+    withoutEquals: boolean;
 }
 
 interface SequelizePromise
@@ -1760,4 +2031,110 @@ interface SequelizePromiseT<T> extends SequelizePromise
      * @param options   Contains an array of the events to proxy. Defaults to sql, error and success
      */
     proxy(promise:SequelizePromiseT<T>, options?:SequelizeProxyOptions):SequelizePromiseT<T>;
+}
+
+interface SequelizeUtils {
+    _:SequelizeLodash;
+
+    /**
+     * Formats a string to parse and interpolate values into the string based on the optionally provided SQL dialect.
+     * @param arr       Array where first element is string with placeholders and remaining attributes are values to replace placeholders.
+     * @param dialect   SQL Dialect.
+     */
+    format(arr:Array<any>, dialect?:string):string;
+
+    /**
+     * Formats a SQL string replacing named placeholders with values from the parameters object with matching key names.
+     *
+     * @param sql           String to format.
+     * @param parameters    Key/value hash with values to replace in string.
+     * @param dialect       SQL Dialect
+     */
+    formatNamedParameters(sql:string, parameters:Object, dialect?:string):string;
+
+    injectScope(scope:string, merge:boolean):any;
+
+    smartWhere(whereArg:any, dialect:string):Object;
+
+    getWhereLogic(logic:string, val?:any):string;
+
+    isHash(obj:Object):boolean;
+
+    hasChanged(attrValue:any, value:any):boolean;
+
+    argsArePrimaryKeys(args:Array<any>, primaryKeys:Object):boolean;
+
+    /**
+     * Consistently combines two table names such that the alphabetically first name always comes first when combined.
+     *
+     * @param table1
+     * @param table2
+     */
+    combineTableNames(table1:string, table2:string):string;
+
+    singularize(s:string, lnguage:string):string;
+
+    pluralize(s:string, language:string):string;
+
+    removeCommentsFromFunctionString(s:string):string;
+
+    toDefaultValue(value:any):any;
+
+    defaultValueSchemable(value:any):boolean;
+    setAttributes(hash:Object, identifier:string, instance:Object, prefix:string):Object;
+    removeNullValuesFromHash(hash:Object, omitNull:boolean, options:Object):Object;
+    firstValueOfHash(obj:Object):any;
+    inherit(subClass:any, superClass:any):any;
+    stack():string;
+    now(dialect:string):Date;
+
+    /**
+     * Runs provided function on next tick, depending on environment.
+     *
+     * @param f
+     */
+    tick(f:Function):void;
+
+    /**
+     * Surrounds a string with tick marks while removing all existing tick marks from the string.
+     * @param s         String to tick
+     * @param tickChar  Tick mark. Default `
+     */
+    addTicks(s:string, tickChar?:string):string;
+
+    removeTicks(s:string, tickChar?:string):string;
+
+    generateUUID():string;
+
+    validateParameter(value:any, expectation:any):boolean;
+
+    CustomEventEmitter:SequelizeEventEmitter;
+    Promise:SequelizePromise;
+    QueryChainer:SequelizeQueryChainer;
+    Lingo:any; // external project, no definitions yet}
+}
+
+interface SequelizeLodash extends _.LoDashStatic
+{
+    includes(str: string, needle: string): boolean;
+    camelizeIf(str:string, condition: boolean):string;
+    camelizeIf(str:string, condition: any):string;
+    underscoredIf(str:string, condition: boolean):string;
+    underscoredIf(str:string, condition: any):string;
+    /**
+     * * Returns an array with some falsy values removed. The values null, "", undefined and NaN are considered falsey.
+     *
+     * @param arr Array to compact.
+     */
+    compactLite<T>(arr:Array<T>):Array<T>;
+}
+
+interface SequelizeMetaPojo
+{
+    from: string;
+    to: string;
+}
+interface SequelizeMetaInstance extends SequelizeMetaPojo, SequelizeModel<SequelizeMetaInstance, SequelizeMetaPojo>
+{
+
 }
