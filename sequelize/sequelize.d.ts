@@ -2322,7 +2322,7 @@ declare module sequelize
          */
         combineTableNames(table1:string, table2:string):string;
 
-        singularize(s:string, lnguage:string):string;
+        singularize(s:string, language?:string):string;
 
         pluralize(s:string, language:string):string;
 
@@ -2364,7 +2364,7 @@ declare module sequelize
         Lingo:any; // external project, no definitions yet}
     }
 
-    interface Lodash extends _.LoDashStatic {
+    interface Lodash extends _.LoDashStatic, UnderscoreStringStaticExports {
         includes(str:string, needle:string): boolean;
         camelizeIf(str:string, condition:boolean):string;
         camelizeIf(str:string, condition:any):string;
