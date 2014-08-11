@@ -16,7 +16,7 @@ declare module "bcrypt" {
     export function hashSync(data:string, salt:ISalt):string;
     export function hashSync(data:string, rounds:number):string;
 
-    export function compare(data:string, encrypted:string, callback:(err, same:boolean) => void):void;
+    export function compare(data:string, encrypted:string, callback:(err:Error, same:boolean) => void):void;
     export function compareSync(data:string, encrypted:string):boolean;
 
     export function getRounds(encrypted:string):number;
