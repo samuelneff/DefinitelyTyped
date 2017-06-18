@@ -6,11 +6,10 @@
 
 // Samuel Neff: Removed underscore dependence,
 
-declare module 'underscore' {
-    interface UnderscoreStatic extends UnderscoreStringStatic {
-        str: UnderscoreStringStatic;
-        string: UnderscoreStringStatic;
-    }
+declare module 'underscore.string' {
+
+    const _s:UnderscoreStringStatic;
+    export = _s;
 
     export interface UnderscoreStringStatic extends UnderscoreStringStaticExports {
         /**
