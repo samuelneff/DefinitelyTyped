@@ -115,7 +115,7 @@ export interface RowProps extends DivProps {
     lg?: number;
 }
 
-export interface SelectProps extends DivProps {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
     label?: React.ReactNode;
     readOnly?: boolean;
     useDefault?: boolean;
